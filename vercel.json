@@ -3,7 +3,9 @@
   "installCommand": "pip install -r backend/requirements.txt && cd gnovium-docs && npm install",
   "buildCommand": "cd gnovium-docs && npm run build",
   "functions": {
-    "backend/run.py": {}
+    "backend/run.py": {
+      "maxDuration": 30
+    }
   },
   "routes": [
     {
