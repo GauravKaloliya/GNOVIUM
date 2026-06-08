@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gnovium API Dashboard & Docs",
-  description: "Cinematic API documentation and branch graph simulator for Gnovium Knowledge OS",
+  title: "Gnovium API Docs",
+  description: "API documentation for Gnovium",
 };
 
 export default function RootLayout({
