@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+:root {
+  --background: #09090b; /* Zinc-950 */
+  --foreground: #f4f4f5; /* Zinc-100 */
+}
+
+@theme {
+  --color-slate-950: #09090b;
+  --color-zinc-950: #09090b;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Geist Mono', system-ui, -apple-system, monospace;
+  overflow-x: hidden;
+}
+
+/* Custom Webkit Scrollbars for premium styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(9, 9, 11, 0.8);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  border-radius: 0px; /* Sharp corners */
+  border: 1px solid #09090b;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+
+/* Grid overlay background */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  background-position: center;
+}
+
+/* Bold Neobrutalist parallel extrusion shadow (Active / Focused) */
+.neo-depth {
+  border-width: 3px !important;
+  box-shadow: 
+    1px 1px 0px #ffffff,
+    2px 2px 0px #ffffff,
+    3px 3px 0px #ffffff,
+    4px 4px 0px #ffffff,
+    5px 5px 0px #ffffff,
+    6px 6px 0px #ffffff,
+    7px 7px 0px #ffffff,
+    8px 8px 0px #ffffff;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-depth:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 
+    1px 1px 0px #ffffff,
+    2px 2px 0px #ffffff,
+    3px 3px 0px #ffffff,
+    4px 4px 0px #ffffff,
+    5px 5px 0px #ffffff,
+    6px 6px 0px #ffffff,
+    7px 7px 0px #ffffff,
+    8px 8px 0px #ffffff,
+    9px 9px 0px #ffffff,
+    10px 10px 0px #ffffff,
+    11px 11px 0px #ffffff,
+    12px 12px 0px #ffffff;
+}
+
+/* Medium Neobrutalist parallel extrusion shadow (Inactive / Standard) */
+.neo-depth-zinc {
+  border-width: 2px !important;
+  box-shadow: 
+    1px 1px 0px #3f3f46,
+    2px 2px 0px #3f3f46,
+    3px 3px 0px #3f3f46,
+    4px 4px 0px #3f3f46,
+    5px 5px 0px #3f3f46,
+    6px 6px 0px #3f3f46;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-depth-zinc:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 
+    1px 1px 0px #71717a,
+    2px 2px 0px #71717a,
+    3px 3px 0px #71717a,
+    4px 4px 0px #71717a,
+    5px 5px 0px #71717a,
+    6px 6px 0px #71717a,
+    7px 7px 0px #71717a,
+    8px 8px 0px #71717a,
+    9px 9px 0px #71717a,
+    10px 10px 0px #71717a;
+  border-color: #52525b !important;
+}
+
+/* Small extrusion shadow for buttons / badges / inputs */
+.neo-depth-btn {
+  border-width: 2px !important;
+  box-shadow: 
+    1px 1px 0px #ffffff,
+    2px 2px 0px #ffffff,
+    3px 3px 0px #ffffff;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-depth-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 
+    1px 1px 0px #ffffff,
+    2px 2px 0px #ffffff,
+    3px 3px 0px #ffffff,
+    4px 4px 0px #ffffff,
+    5px 5px 0px #ffffff;
+}
+
+.neo-depth-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+/* 3D Isometric Projection assembly - Bold Layout */
+.iso-perspective {
+  perspective: 1500px;
+  transform-style: preserve-3d;
+}
+
+.iso-assembly {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  transform: rotateX(60deg) rotateZ(-45deg);
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Stacking height configurations */
+.iso-layer-1 {
+  transform: translateZ(0px);
+}
+.iso-layer-2 {
+  transform: translateZ(70px);
+}
+.iso-layer-3 {
+  transform: translateZ(140px);
+}
+
+/* Hover effects to show expanded assembly - Exploded view */
+.iso-perspective:hover .iso-layer-1 {
+  transform: translateZ(-30px);
+}
+.iso-perspective:hover .iso-layer-2 {
+  transform: translateZ(80px);
+}
+.iso-perspective:hover .iso-layer-3 {
+  transform: translateZ(190px);
+}
+
+/* Isometric Block Faces - Bold Outlines */
+.iso-block {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.iso-face-top {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  background: #09090b;
+  border: 3px solid #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: visible;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.iso-face-left {
+  position: absolute;
+  width: 220px;
+  height: 30px;
+  background: #18181b;
+  border-left: 3px solid #ffffff;
+  border-right: 3px solid #ffffff;
+  border-bottom: 3px solid #ffffff;
+  transform: rotateX(-90deg) translateZ(205deg) translateY(-15px);
+  transform-origin: bottom center;
+}
+
+.iso-face-right {
+  position: absolute;
+  width: 30px;
+  height: 220px;
+  background: #27272a;
+  border-top: 3px solid #ffffff;
+  border-right: 3px solid #ffffff;
+  border-bottom: 3px solid #ffffff;
+  transform: rotateY(90deg) translateZ(205deg) translateX(15px);
+  transform-origin: center right;
+}

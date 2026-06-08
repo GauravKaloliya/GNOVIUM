@@ -1,0 +1,82 @@
+from flask import Blueprint, request
+
+from app.api.v1.helpers import item_response, list_response, pagination_args, request_json
+from app.core.validation import load_schema
+from app.repositories.domain import EntityRepository, EntityTypeRepository, PropertyRepository
+from app.schemas.domain import EntityCreateSchema, EntityTypeCreateSchema, EntityUpdateSchema, PropertyCreateSchema
+from app.services.entity_service import EntityService
+from app.services.security import current_user_id, secured
+
+bp = Blueprint("entities", __name__)
+
+
+@bp.get("/")
+@secured
+def list_entities():
+    args = pagination_args()
+    filters = {"workspace_id": request.args.get("workspace_id"), "entity_type_id": request.args.get("entity_type_id")}
+    return list_response(EntityRepository().list(filters, args["page"], args["per_page"]))
+
+
+@bp.post("/")
+@secured
+def create_entity():
+    return item_response(EntityService().create(load_schema(EntityCreateSchema(), request_json()), current_user_id()), 201)
+
+
+@bp.get("/<uuid:entity_id>")
+@secured
+def get_entity(entity_id):
+    return item_response(EntityRepository().get(entity_id))
+
+
+@bp.patch("/<uuid:entity_id>")
+@secured
+def update_entity(entity_id):
+    return item_response(
+        EntityService().update(entity_id, load_schema(EntityUpdateSchema(), request_json(), partial=True), current_user_id())
+    )
+
+
+@bp.post("/<uuid:entity_id>/archive")
+@secured
+def archive_entity(entity_id):
+    return item_response(EntityService().archive(entity_id, True))
+
+
+@bp.post("/<uuid:entity_id>/restore")
+@secured
+def restore_entity(entity_id):
+    return item_response(EntityService().archive(entity_id, False))
+
+
+@bp.post("/<uuid:entity_id>/duplicate")
+@secured
+def duplicate_entity(entity_id):
+    return item_response(EntityService().duplicate(entity_id, current_user_id()), 201)
+
+
+@bp.post("/types")
+@secured
+def create_entity_type():
+    return item_response(EntityService().create_type(load_schema(EntityTypeCreateSchema(), request_json())), 201)
+
+
+@bp.get("/types")
+@secured
+def list_entity_types():
+    args = pagination_args()
+    return list_response(EntityTypeRepository().list({"workspace_id": request.args.get("workspace_id")}, args["page"], args["per_page"]))
+
+
+@bp.post("/properties")
+@secured
+def create_property():
+    return item_response(EntityService().create_property(load_schema(PropertyCreateSchema(), request_json())), 201)
+
+
+@bp.get("/properties")
+@secured
+def list_properties():
+    args = pagination_args()
+    return list_response(PropertyRepository().list({"workspace_id": request.args.get("workspace_id")}, args["page"], args["per_page"]))
