@@ -1,14 +1,13 @@
 """
 PostgreSQL-specific custom column types.
-These use native PG extensions: pgvector for vector similarity search,
-TSVECTOR for full-text search. No SQLite fallbacks needed.
+These use native PG extensions (pgvector, TSVECTOR) with safe fallbacks to standard types on SQLite.
 """
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.types import UserDefinedType
+from sqlalchemy.types import UserDefinedType, Text
 
 
 class Vector(UserDefinedType):
-    """pgvector VECTOR(n) column type for embedding similarity search."""
+    """pgvector VECTOR(n) column type for embedding similarity search with SQLite fallback."""
     cache_ok = True
 
     def __init__(self, dim=1536):
@@ -34,3 +33,22 @@ class Vector(UserDefinedType):
                 return [float(x) for x in value.strip("[]").split(",")]
             return value
         return process
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            return dialect.type_descriptor(self)
+        return dialect.type_descriptor(Text())
+
+
+class TSVectorType(UserDefinedType):
+    """PostgreSQL TSVECTOR column type for full-text search with SQLite fallback."""
+    cache_ok = True
+
+    def get_col_spec(self, **kw):
+        return "TSVECTOR"
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            return dialect.type_descriptor(self)
+        return dialect.type_descriptor(Text())
+

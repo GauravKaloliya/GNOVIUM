@@ -34,18 +34,28 @@ def env_list(name, default=""):
 
 
 def database_url():
-    """Resolve and normalise the PostgreSQL connection URL.
+    """Resolve and normalise the database connection URL.
 
     Supports:
+      sqlite:///...       → used as-is for local/offline mode
       postgresql://...   → postgresql+psycopg://...  (psycopg v3)
       postgresql+psycopg2://...  (kept as-is for psycopg2 users)
     """
-    url = os.environ["DATABASE_URL"]   # hard-fail if not set — no SQLite fallback
+    url = os.environ.get("DATABASE_URL", "")
+    if not url:
+        # Fallback to local SQLite for development
+        sqlite_path = BASE_DIR / "local.db"
+        return f"sqlite:///{sqlite_path}"
     if url.startswith("postgres://"):  # Heroku legacy shorthand
         url = url.replace("postgres://", "postgresql://", 1)
     if url.startswith("postgresql://"):
         return url.replace("postgresql://", "postgresql+psycopg://", 1)
     return url
+
+
+def is_sqlite():
+    url = os.environ.get("DATABASE_URL", "")
+    return not url or url.startswith("sqlite")
 
 
 def redis_url():
@@ -62,7 +72,7 @@ class Config:
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=int(os.getenv("JWT_REFRESH_DAYS", "14")))
     SQLALCHEMY_DATABASE_URI = database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
+    SQLALCHEMY_ENGINE_OPTIONS = {} if is_sqlite() else {
         "pool_pre_ping": True,
         "pool_size": int(os.getenv("DB_POOL_SIZE", "1")),
         "max_overflow": int(os.getenv("DB_MAX_OVERFLOW", "4")),

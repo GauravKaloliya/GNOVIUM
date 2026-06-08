@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from sqlalchemy import CheckConstraint, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
+from sqlalchemy.types import UUID
 
 from app.extensions import db
 from app.models.base import CreatedOnlyMixin, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
-from app.models.types import Vector
+from app.models.types import TSVectorType, Vector
 
 FK = UUID(as_uuid=True)
 
@@ -45,7 +45,7 @@ class Workspace(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
     owner_id = db.Column(FK, db.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     name = db.Column(db.Text, nullable=False)
     description = db.Column(db.Text)
-    settings = db.Column(JSONB, default=dict)
+    settings = db.Column(db.JSON, default=dict)
 
 
 class WorkspaceMember(UUIDPrimaryKeyMixin, SoftDeleteMixin, db.Model):
@@ -71,7 +71,7 @@ class EntityType(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Mode
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     name = db.Column(db.Text, nullable=False)
     icon = db.Column(db.Text)
-    config = db.Column(JSONB, default=dict)
+    config = db.Column(db.JSON, default=dict)
 
 
 class Entity(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
@@ -100,7 +100,7 @@ class Block(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
     parent_block_id = db.Column(FK, db.ForeignKey("blocks.id", ondelete="CASCADE"))
     block_type = db.Column(db.Text, nullable=False)
     position = db.Column(db.Numeric(20, 10), nullable=False)
-    content = db.Column(JSONB, nullable=False, default=dict)
+    content = db.Column(db.JSON, nullable=False, default=dict)
 
 
 # ─────────────────────────────────────────────
@@ -117,7 +117,7 @@ class Property(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model)
     entity_type_id = db.Column(FK, db.ForeignKey("entity_types.id", ondelete="RESTRICT"))
     name = db.Column(db.Text, nullable=False)
     property_type = db.Column(db.Text, nullable=False)
-    config = db.Column(JSONB, default=dict)
+    config = db.Column(db.JSON, default=dict)
 
 
 class EntityPropertyValue(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
@@ -125,7 +125,7 @@ class EntityPropertyValue(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, 
 
     entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="CASCADE"), nullable=False)
     property_id = db.Column(FK, db.ForeignKey("properties.id", ondelete="CASCADE"), nullable=False)
-    value = db.Column(JSONB, nullable=False)
+    value = db.Column(db.JSON, nullable=False)
 
 
 # ─────────────────────────────────────────────
@@ -143,7 +143,7 @@ class Relation(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model)
     source_entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="CASCADE"), nullable=False)
     target_entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="CASCADE"), nullable=False)
     relation_type = db.Column(db.Text, nullable=False)
-    relation_metadata = db.Column("metadata", JSONB, default=dict)
+    relation_metadata = db.Column("metadata", db.JSON, default=dict)
     created_by = db.Column(FK, db.ForeignKey("users.id", ondelete="SET NULL"))
 
 
@@ -185,7 +185,7 @@ class EntityVersion(UUIDPrimaryKeyMixin, CreatedOnlyMixin, db.Model):
 
     entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="RESTRICT"), nullable=False)
     changeset_id = db.Column(FK, db.ForeignKey("changesets.id", ondelete="SET NULL"))
-    snapshot = db.Column(JSONB, nullable=False)
+    snapshot = db.Column(db.JSON, nullable=False)
     content_hash = db.Column(db.Text, nullable=False)
 
 
@@ -194,7 +194,7 @@ class BlockVersion(UUIDPrimaryKeyMixin, CreatedOnlyMixin, db.Model):
 
     block_id = db.Column(FK, db.ForeignKey("blocks.id", ondelete="RESTRICT"), nullable=False)
     changeset_id = db.Column(FK, db.ForeignKey("changesets.id", ondelete="SET NULL"))
-    snapshot = db.Column(JSONB, nullable=False)
+    snapshot = db.Column(db.JSON, nullable=False)
     content_hash = db.Column(db.Text, nullable=False)
 
 
@@ -221,7 +221,7 @@ class BranchMerge(UUIDPrimaryKeyMixin, db.Model):
     created_by = db.Column(FK, db.ForeignKey("users.id", ondelete="SET NULL"))
     merged_at = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     status = db.Column(db.Text, nullable=False, default="completed")
-    merge_metadata = db.Column("metadata", JSONB, default=dict)
+    merge_metadata = db.Column("metadata", db.JSON, default=dict)
 
 
 class MergeConflict(UUIDPrimaryKeyMixin, db.Model):
@@ -230,7 +230,7 @@ class MergeConflict(UUIDPrimaryKeyMixin, db.Model):
     merge_id = db.Column(FK, db.ForeignKey("branch_merges.id", ondelete="CASCADE"), nullable=False)
     entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="CASCADE"), nullable=False)
     conflict_type = db.Column(db.Text, nullable=False)
-    details = db.Column(JSONB, nullable=False)
+    details = db.Column(db.JSON, nullable=False)
     resolved = db.Column(db.Boolean, default=False)
     resolved_by = db.Column(FK, db.ForeignKey("users.id", ondelete="SET NULL"))
     resolution = db.Column(db.Text)
@@ -243,7 +243,7 @@ class EntityEvent(UUIDPrimaryKeyMixin, CreatedOnlyMixin, db.Model):
     entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="RESTRICT"), nullable=False)
     changeset_id = db.Column(FK, db.ForeignKey("changesets.id", ondelete="SET NULL"))
     event_type = db.Column(db.Text, nullable=False)
-    payload = db.Column(JSONB, nullable=False)
+    payload = db.Column(db.JSON, nullable=False)
 
 
 # ─────────────────────────────────────────────
@@ -270,7 +270,7 @@ class SearchDocument(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.
     title = db.Column(db.Text)
     content = db.Column(db.Text)
     content_hash = db.Column(db.Text, nullable=False)
-    search_vector = db.Column(TSVECTOR)
+    search_vector = db.Column(TSVectorType())
 
 
 class File(UUIDPrimaryKeyMixin, SoftDeleteMixin, db.Model):
@@ -314,7 +314,7 @@ class ActivityLog(UUIDPrimaryKeyMixin, CreatedOnlyMixin, db.Model):
     entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="RESTRICT"))
     block_id = db.Column(FK, db.ForeignKey("blocks.id", ondelete="RESTRICT"))
     action = db.Column(db.Text, nullable=False)
-    details = db.Column(JSONB, default=dict)
+    details = db.Column(db.JSON, default=dict)
 
 
 class GovernanceReport(UUIDPrimaryKeyMixin, CreatedOnlyMixin, db.Model):
@@ -325,7 +325,7 @@ class GovernanceReport(UUIDPrimaryKeyMixin, CreatedOnlyMixin, db.Model):
     duplicate_count = db.Column(db.Integer, default=0)
     orphan_count = db.Column(db.Integer, default=0)
     stale_count = db.Column(db.Integer, default=0)
-    report = db.Column(JSONB)
+    report = db.Column(db.JSON)
 
 
 class Notification(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model):
@@ -344,7 +344,7 @@ class GraphMaterialization(UUIDPrimaryKeyMixin, db.Model):
     __tablename__ = "graph_materializations"
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
-    graph_snapshot = db.Column(JSONB, nullable=False)
+    graph_snapshot = db.Column(db.JSON, nullable=False)
     generated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     version_hash = db.Column(db.Text)
 
@@ -356,7 +356,7 @@ class SyncOperation(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.M
     operation_type = db.Column(db.Text, nullable=False)
     entity_type = db.Column(db.Text)
     entity_id = db.Column(FK)
-    payload = db.Column(JSONB, nullable=False)
+    payload = db.Column(db.JSON, nullable=False)
     device_id = db.Column(db.Text)
     client_clock = db.Column(db.BigInteger)
     synced = db.Column(db.Boolean, default=False)
@@ -369,8 +369,8 @@ class Job(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model):
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"))
     job_type = db.Column(db.Text, nullable=False)
     status = db.Column(db.Text, nullable=False, default="pending")
-    payload = db.Column(JSONB, nullable=False)
-    result = db.Column(JSONB)
+    payload = db.Column(db.JSON, nullable=False)
+    result = db.Column(db.JSON)
     created_by = db.Column(FK, db.ForeignKey("users.id", ondelete="SET NULL"))
     started_at = db.Column(db.DateTime(timezone=True))
     completed_at = db.Column(db.DateTime(timezone=True))
