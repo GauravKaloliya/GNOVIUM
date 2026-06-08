@@ -112,9 +112,8 @@ function DocsContent() {
               Gnovium API is a local-first Knowledge Operating System API for building applications where knowledge behaves like a living system rather than a collection of disconnected documents. It combines block-based content, relational knowledge modeling, interactive knowledge graphs, Git-inspired versioning, workspace branching, visual diffing, AI-powered semantic retrieval, and governance intelligence into a unified graph-driven architecture that preserves both information and the context connecting it. Through a single API, developers can create, connect, explore, search, version, compare, and evolve knowledge while maintaining a complete history of how ideas, decisions, research, and projects change over time. By transforming knowledge into a connected, versioned, and continuously evolving network of understanding, Gnovium provides the foundation for the next generation of intelligent productivity systems, organizational memory, and autonomous knowledge platforms.
             </p>
             <div className="flex flex-wrap gap-3 pt-2 font-mono text-[11px] font-bold">
-              <span className="px-2.5 py-1 border-2 border-zinc-700 text-zinc-300 bg-zinc-900 shadow-[2px_2px_0px_0px_#3f3f46]">HOST: www.gnovium.com</span>
+              <span className="px-2.5 py-1 border-2 border-zinc-700 text-zinc-300 bg-zinc-900 shadow-[2px_2px_0px_0px_#3f3f46]">HOST: https://api.gnovium.com/api/v1</span>
               <span className="px-2.5 py-1 border-2 border-zinc-700 text-zinc-300 bg-zinc-900 shadow-[2px_2px_0px_0px_#3f3f46]">VERSION: v1.0.0</span>
-              <span className="px-2.5 py-1 border-2 border-zinc-700 text-zinc-300 bg-zinc-900 shadow-[2px_2px_0px_0px_#3f3f46]">DB: OFFLINE SCHEMA</span>
             </div>
           </div>
 
@@ -171,55 +170,56 @@ function DocsContent() {
           {/* Database Modes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border-2 border-zinc-700 bg-zinc-900/60 p-6 rounded-xl">
-              <div className="text-[10px] font-black uppercase tracking-widest text-emerald-400 font-mono mb-2">
-                🖥 LOCAL MODE (Default)
+              <div className="border-2 border-zinc-700 bg-zinc-900/60 p-6 rounded-xl">
+                <div className="text-[10px] font-black uppercase tracking-widest text-emerald-400 font-mono mb-2">
+                  🖥 LOCAL MODE (Default)
+                </div>
+
+                <p className="text-sm text-zinc-300 leading-relaxed">
+                  Your knowledge stays yours. Run Gnovium entirely on your device with{" "}
+                  <span className="font-semibold text-white">zero setup</span>,{" "}
+                  <span className="font-semibold text-white">instant performance</span>,{" "}
+                  <span className="font-semibold text-white">full offline access</span>, and{" "}
+                  <span className="font-semibold text-white">complete data ownership</span>{" "}
+                  powered by SQLite. Ideal for personal knowledge bases, research, learning,
+                  and privacy-first workflows.
+                </p>
+
+                <div className="mt-3">
+                  <code className="bg-zinc-800 px-2 py-1 rounded text-xs text-emerald-300 font-mono">
+                    GNOVIUM_MODE=local
+                  </code>
+                </div>
               </div>
 
-              <p className="text-sm text-zinc-300 leading-relaxed">
-                Your knowledge stays yours. Run Gnovium entirely on your device with{" "}
-                <span className="font-semibold text-white">zero setup</span>,{" "}
-                <span className="font-semibold text-white">instant performance</span>,{" "}
-                <span className="font-semibold text-white">full offline access</span>, and{" "}
-                <span className="font-semibold text-white">complete data ownership</span>{" "}
-                powered by SQLite. Ideal for personal knowledge bases, research, learning,
-                and privacy-first workflows.
-              </p>
+              <div className="border-2 border-zinc-700 bg-zinc-900/60 p-6 rounded-xl">
+                <div className="text-[10px] font-black uppercase tracking-widest text-sky-400 font-mono mb-2">
+                  ☁️ CLOUD MODE
+                </div>
 
-              <div className="mt-3">
-                <code className="bg-zinc-800 px-2 py-1 rounded text-xs text-emerald-300 font-mono">
-                  GNOVIUM_MODE=local
-                </code>
-              </div>
-            </div>
+                <p className="text-sm text-zinc-300 leading-relaxed">
+                  Transform personal knowledge into{" "}
+                  <span className="font-semibold text-white">shared intelligence</span>.
+                  Enable team collaboration, workspace synchronization, automatic backups,
+                  and managed PostgreSQL infrastructure while preserving the same knowledge
+                  model, workflows, and experience.
+                </p>
 
-            <div className="border-2 border-zinc-700 bg-zinc-900/60 p-6 rounded-xl">
-              <div className="text-[10px] font-black uppercase tracking-widest text-sky-400 font-mono mb-2">
-                ☁️ CLOUD MODE
+                <div className="mt-3">
+                  <code className="bg-zinc-800 px-2 py-1 rounded text-xs text-sky-300 font-mono">
+                    GNOVIUM_MODE=cloud
+                  </code>
+                </div>
               </div>
 
-              <p className="text-sm text-zinc-300 leading-relaxed">
-                Transform personal knowledge into{" "}
-                <span className="font-semibold text-white">shared intelligence</span>.
-                Enable team collaboration, workspace synchronization, automatic backups,
-                and managed PostgreSQL infrastructure while preserving the same knowledge
-                model, workflows, and experience.
-              </p>
-
-              <div className="mt-3">
-                <code className="bg-zinc-800 px-2 py-1 rounded text-xs text-sky-300 font-mono">
-                  GNOVIUM_MODE=cloud
-                </code>
+              <div className="md:col-span-2 text-center border border-zinc-800 bg-zinc-900/40 rounded-xl p-4">
+                <p className="text-sm text-zinc-400">
+                  <span className="text-white font-semibold">
+                    Start local. Scale when you're ready.
+                  </span>{" "}
+                  No migration. No lock-in. Just knowledge that grows with you.
+                </p>
               </div>
-            </div>
-
-            <div className="md:col-span-2 text-center border border-zinc-800 bg-zinc-900/40 rounded-xl p-4">
-              <p className="text-sm text-zinc-400">
-                <span className="text-white font-semibold">
-                  Start local. Scale when you're ready.
-                </span>{" "}
-                No migration. No lock-in. Just knowledge that grows with you.
-              </p>
             </div>
           </div>
 
@@ -524,7 +524,6 @@ curl -X POST https://api.gnovium.com/api/v1/graph/paths \\
         )}
       </AnimatePresence>
     </div>
-  </div>
   );
 }
 
