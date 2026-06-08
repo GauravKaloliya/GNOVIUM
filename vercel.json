@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "cd gnovium-docs && npm install",
   "buildCommand": "cd gnovium-docs && npm run build",
+  "outputDirectory": ".",
   "routes": [
     {
       "src": "/api/v1/docs(?:/)?",
