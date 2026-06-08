@@ -524,6 +524,7 @@ curl -X POST https://api.gnovium.com/api/v1/graph/paths \\
         )}
       </AnimatePresence>
     </div>
+  </div>
   );
 }
 
