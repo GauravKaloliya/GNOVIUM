@@ -2,11 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pip install -r backend/requirements.txt && cd gnovium-docs && npm install",
   "buildCommand": "cd gnovium-docs && npm run build",
-  "functions": {
-    "backend/run.py": {
-      "runtime": "@vercel/python"
-    }
-  },
   "routes": [
     {
       "src": "/api/v1/docs(?:/)?",
