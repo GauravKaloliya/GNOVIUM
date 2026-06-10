@@ -1255,3 +1255,13 @@ export const ENDPOINTS: Endpoint[] = [
     response: itemEnvelope({ id: 'a0e953b9-0cdd-4c68-9b50-8578700ce361', status: 'completed', result: { processed: 24, failed: 0 } }),
   },
 ];
+
+export const getAllModules = () => {
+  return [...new Set(ENDPOINTS.map(ep => ep.module))].sort();
+};
+
+export const getModuleEndpoints = (moduleName: string) => {
+  return ENDPOINTS.filter(
+    ep => ep.module.toLowerCase() === moduleName.toLowerCase()
+  );
+};

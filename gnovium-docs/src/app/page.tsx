@@ -7,6 +7,7 @@ import { Terminal, Copy, Check, Info, ListCollapse } from 'lucide-react';
 import PageWrapper from '@/components/PageWrapper';
 import Sidebar from '@/components/Sidebar';
 import { ENDPOINTS, Endpoint } from '@/data/endpoints';
+import Footer from '@/components/Footer';
 
 const API_BASE_URL = 'https://api.gnovium.com/api/v1';
 
@@ -509,6 +510,31 @@ curl -X POST https://api.gnovium.com/api/v1/graph/paths \\
                 </button>
               </div>
 
+              {/* Creator Credit - Same as Navbar */}
+              <div className="mt-auto pt-8 border-t border-white/10">
+                <div className="font-mono text-[11px] font-black uppercase tracking-[0.2em] text-white flex flex-col gap-3">
+                  <span className="opacity-70">CREATED BY</span>
+                  <a
+                    href="https://www.linkedin.com/in/gauravkaloliya225"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors border-b border-white/30 hover:border-white pb-px inline-block"
+                  >
+                    GAURAV KALOLIYA
+                  </a>
+
+                  <a
+                    href="https://github.com/GauravKaloliya/gnovium"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors flex items-center gap-1.5 group"
+                  >
+                    GITHUB
+                    <span className="text-xs opacity-60 group-hover:opacity-100">↗</span>
+                  </a>
+                </div>
+              </div>
+
               <Sidebar
                 endpoints={ENDPOINTS}
                 activeId={activeEndpointId}
@@ -536,6 +562,7 @@ export default function DocsPage() {
         </div>
       }>
         <DocsContent />
+        <Footer />
       </Suspense>
     </PageWrapper>
   );
