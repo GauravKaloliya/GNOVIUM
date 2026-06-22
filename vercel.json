@@ -1,0 +1,39 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd gnovium-docs && npm install",
+  "buildCommand": "cd gnovium-docs && npm run build",
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/api/v1/docs(?:/)?",
+      "dest": "/gnovium-docs/out/index.html"
+    },
+    {
+      "src": "/api/v1/docs/(.*)",
+      "dest": "/gnovium-docs/out/$1"
+    },
+    {
+      "src": "/api/v1/(.*)",
+      "dest": "/backend/run.py"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/backend/run.py"
+    },
+    {
+      "src": "/health",
+      "dest": "/backend/run.py"
+    },
+    {
+      "src": "/",
+      "status": 308,
+      "headers": {
+        "Location": "/api/v1/docs"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/gnovium-docs/out/$1"
+    }
+  ]
+}

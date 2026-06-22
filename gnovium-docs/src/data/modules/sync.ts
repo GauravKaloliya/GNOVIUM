@@ -1,0 +1,61 @@
+import type { Endpoint } from '../types';
+import { itemEnvelope, listEnvelope, j, authHeader, paginationParams, pathParam, workspaceParam, workspaceId, entityId, syncOpId, userId } from '../common';
+
+export const syncEndpoints: Endpoint[] = [
+  {
+    id: 'sync-list',
+    module: 'Sync',
+    method: 'GET',
+    path: '/sync/',
+    summary: 'List sync operations',
+    description: 'Returns sync operations for a workspace. Set pending=true to return unsynced operations only.',
+    headers: authHeader,
+    parameters: [
+      { ...workspaceParam, required: false },
+      { name: 'pending', type: 'Boolean', required: false, description: 'When true, only pending (unsynced) operations are returned.' },
+      ...paginationParams,
+    ],
+    response: listEnvelope([{ id: syncOpId, workspace_id: workspaceId, operation_type: 'entity_update', synced_at: null }]),
+  },
+  {
+    id: 'sync-create',
+    module: 'Sync',
+    method: 'POST',
+    path: '/sync/',
+    summary: 'Create sync operation',
+    description: 'Ingests a client operation for cross-device synchronization. Used by the offline sync engine to queue changes made on other devices.',
+    headers: authHeader,
+    requestBody: j({
+      workspace_id: workspaceId,
+      operation_type: 'entity_update',
+      entity_type: 'entity',
+      entity_id: entityId,
+      payload: { title: 'Research Notes v2' },
+      device_id: 'web-01',
+      client_clock: 42,
+    }),
+    response: itemEnvelope({ id: syncOpId, operation_type: 'entity_update', created_by: userId }),
+  },
+  {
+    id: 'sync-get',
+    module: 'Sync',
+    method: 'GET',
+    path: '/sync/<id>',
+    summary: 'Get sync operation',
+    description: 'Retrieves a single sync operation by ID.',
+    headers: authHeader,
+    parameters: [pathParam('op_id', 'Sync operation ID')],
+    response: itemEnvelope({ id: syncOpId, operation_type: 'entity_update' }),
+  },
+  {
+    id: 'sync-ack',
+    module: 'Sync',
+    method: 'POST',
+    path: '/sync/<id>/ack',
+    summary: 'Acknowledge sync operation',
+    description: 'Marks a sync operation as applied. Used to confirm that an operation has been processed by the server.',
+    headers: authHeader,
+    parameters: [pathParam('op_id', 'Sync operation ID')],
+    response: itemEnvelope({ id: syncOpId, synced_at: '2026-06-21T12:30:00Z' }),
+  },
+];

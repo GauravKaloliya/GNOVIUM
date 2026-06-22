@@ -1,0 +1,117 @@
+import type { Endpoint } from '../types';
+import { itemEnvelope, listEnvelope, j, authHeader, paginationParams, pathParam, workspaceParam, workspaceId, entityId, relationId } from '../common';
+
+export const relationEndpoints: Endpoint[] = [
+  {
+    id: 'relations-list',
+    module: 'Relations',
+    method: 'GET',
+    path: '/relations/',
+    summary: 'List relations',
+    description: 'Returns graph relations for a workspace.',
+    headers: authHeader,
+    parameters: [{ ...workspaceParam, required: false }, ...paginationParams],
+    response: listEnvelope([
+      { id: relationId, workspace_id: workspaceId, source_entity_id: entityId, target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'references' },
+    ]),
+  },
+  {
+    id: 'relations-create',
+    module: 'Relations',
+    method: 'POST',
+    path: '/relations/',
+    summary: 'Create relation',
+    description: 'Creates a typed edge between two entities. Relation types are free-form strings: references, depends_on, part_of, related_to, implements, extends, or custom.',
+    headers: authHeader,
+    requestBody: j({
+      workspace_id: workspaceId,
+      source_entity_id: entityId,
+      target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b',
+      relation_type: 'references',
+      metadata: { confidence: 0.95 },
+    }),
+    response: itemEnvelope({ id: relationId, relation_type: 'references' }),
+  },
+  {
+    id: 'relations-get',
+    module: 'Relations',
+    method: 'GET',
+    path: '/relations/<id>',
+    summary: 'Get relation',
+    description: 'Retrieves a single relation by ID.',
+    headers: authHeader,
+    parameters: [pathParam('relation_id', 'Relation ID')],
+    response: itemEnvelope({ id: relationId, relation_type: 'references' }),
+  },
+  {
+    id: 'relations-delete',
+    module: 'Relations',
+    method: 'DELETE',
+    path: '/relations/<id>',
+    summary: 'Delete relation',
+    description: 'Soft-deletes a relation edge. The entities remain unaffected.',
+    headers: authHeader,
+    parameters: [pathParam('relation_id', 'Relation ID')],
+    response: itemEnvelope({ id: relationId, deleted_at: '2026-06-21T12:30:00Z' }),
+  },
+  {
+    id: 'relations-entity',
+    module: 'Relations',
+    method: 'GET',
+    path: '/relations/entity/<entity_id>',
+    summary: 'List outgoing relations',
+    description: 'Returns all relations where the specified entity is the source — the "what I link to" view.',
+    headers: authHeader,
+    parameters: [pathParam('entity_id', 'Entity ID')],
+    response: j({
+      data: [
+        { id: relationId, source_entity_id: entityId, target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'references' },
+      ],
+    }),
+  },
+  {
+    id: 'relations-backlinks',
+    module: 'Relations',
+    method: 'GET',
+    path: '/relations/backlinks/<entity_id>',
+    summary: 'List backlinks',
+    description: 'Returns all relations where the specified entity is the target — the "who links to me" view.',
+    headers: authHeader,
+    parameters: [pathParam('entity_id', 'Entity ID')],
+    response: j({
+      data: [
+        { id: relationId, source_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', target_entity_id: entityId },
+      ],
+    }),
+  },
+  {
+    id: 'relations-neighbors',
+    module: 'Relations',
+    method: 'GET',
+    path: '/relations/neighbors/<entity_id>',
+    summary: 'List graph neighbors',
+    description: 'Returns all neighboring entities and their relation types around a given node. Used by the graph renderer to build localized views.',
+    headers: authHeader,
+    parameters: [pathParam('entity_id', 'Entity ID')],
+    response: j({
+      data: {
+        entity_id: entityId,
+        neighbors: [{ entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'references' }],
+      },
+    }),
+  },
+  {
+    id: 'relations-path',
+    module: 'Relations',
+    method: 'GET',
+    path: '/relations/path',
+    summary: 'Find graph path',
+    description: 'Finds the shortest path between two entities in the relation graph using BFS.',
+    headers: authHeader,
+    parameters: [
+      { name: 'source_entity_id', type: 'UUID', required: true, description: 'Starting entity ID.' },
+      { name: 'target_entity_id', type: 'UUID', required: true, description: 'Destination entity ID.' },
+    ],
+    response: j({ data: { path: [entityId, '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b'], distance: 1 } }),
+  },
+];
