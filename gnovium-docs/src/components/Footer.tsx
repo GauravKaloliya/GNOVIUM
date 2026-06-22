@@ -2,7 +2,7 @@ import { Star, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="mt-auto border-t-[3px] border-[var(--foreground)] bg-[var(--card-bg)]">
+    <footer className="mt-20 border-t-[3px] border-[var(--foreground)] bg-[var(--card-bg)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between py-6 gap-4">
           {/* Left - Copyright */}
@@ -33,7 +33,7 @@ export default function Footer() {
               </a>
               <span className="opacity-30">•</span>
               <span className="text-[var(--muted)] flex items-center gap-1">
-                <Star className="h-2.5 w-2.5" /> OPEN SOURCE
+                <Star className="h-2.5 w-2.5" /> API v1.0.0
               </span>
             </div>
           </div>

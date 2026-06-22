@@ -60,3 +60,6 @@ export const getModuleEndpoints = (moduleName: string) => {
 };
 
 export * from './types';
+export * from './error-catalog';
+export * from './changelog';
+export * from './auth-guide';

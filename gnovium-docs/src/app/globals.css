@@ -13,6 +13,7 @@
   --shadow-color: #d4d4d8;
   --accent: #18181b;
   --badge-bg: #ffffff;
+  --accent-hsl: 0 0% 6%;
 }
 
 .dark {
@@ -28,6 +29,7 @@
   --shadow-color: #3f3f46;
   --accent: #fafafa;
   --badge-bg: #09090b;
+  --accent-hsl: 0 0% 98%;
 }
 
 @theme {
@@ -40,7 +42,71 @@ body {
   color: var(--foreground);
   font-family: 'Geist', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  line-height: 1.6;
+}
+
+/* Improved typography and hierarchy */
+h1.display-heading {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+h2.display-heading {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+h3.display-heading {
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+h4.display-heading {
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  font-weight: 800;
+}
+
+/* More whitespace in sections */
+section, .neo-depth, .neo-depth-zinc {
+  margin-bottom: 0.5rem;
+}
+
+/* Better contrast for links */
+a, button {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smoother hover states */
+.hover-glow {
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-glow:hover {
+  box-shadow: 0 0 32px rgba(0,0,0,0.1);
+}
+.dark .hover-glow:hover {
+  box-shadow: 0 0 32px rgba(255,255,255,0.07);
+}
+
+/* Smooth selection color */
+::selection {
+  background-color: var(--foreground);
+  color: var(--background);
+}
+
+/* Better focus styles */
+:focus-visible {
+  outline: 3px solid var(--foreground);
+  outline-offset: 3px;
+  transition: outline-offset 0.1s ease;
 }
 
 code, pre, .font-mono, kbd {
@@ -80,6 +146,99 @@ pre::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 0; }
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
+/* Sepia theme */
+.sepia {
+  --background: #fbf3e8;
+  --foreground: #433422;
+  --muted: #6b5d4a;
+  --border: #d4c5a9;
+  --card-bg: #f8efe0;
+  --card-border: #d4c5a9;
+  --code-bg: #f4e8d8;
+  --nav-bg: rgba(251, 243, 232, 0.9);
+  --sidebar-active: #433422;
+  --shadow-color: #c4b595;
+  --accent: #433422;
+  --badge-bg: #f8efe0;
+  --accent-hsl: 35 20% 26%;
+}
+.sepia ::-webkit-scrollbar-thumb {
+  background: #6b5d4a;
+  border-color: #fbf3e8;
+}
+
+/* High contrast theme */
+.high-contrast {
+  --background: #000000;
+  --foreground: #ffffff;
+  --muted: #cccccc;
+  --border: #ffffff;
+  --card-bg: #000000;
+  --card-border: #ffffff;
+  --code-bg: #111111;
+  --nav-bg: rgba(0, 0, 0, 0.95);
+  --sidebar-active: #ffffff;
+  --shadow-color: #ffffff;
+  --accent: #ffffff;
+  --badge-bg: #000000;
+  --accent-hsl: 0 0% 100%;
+}
+.high-contrast .neo-depth,
+.high-contrast .hero-depth,
+.high-contrast .neo-depth-zinc,
+.high-contrast .neo-depth-btn {
+  border-width: 3px !important;
+}
+
+/* Ocean theme — cool blue tones */
+.ocean {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #1e293b;
+  --card-bg: #0f172a;
+  --card-border: #334155;
+  --code-bg: #1e293b;
+  --nav-bg: rgba(15, 23, 42, 0.9);
+  --sidebar-active: #38bdf8;
+  --shadow-color: #334155;
+  --accent: #38bdf8;
+  --badge-bg: #0f172a;
+  --accent-hsl: 199 89% 48%;
+}
+
+/* Midnight theme — deep purple dark */
+.midnight {
+  --background: #0d0a1a;
+  --foreground: #e8e0f0;
+  --muted: #9a8cb0;
+  --border: #1f1a30;
+  --card-bg: #0d0a1a;
+  --card-border: #2d2640;
+  --code-bg: #1a1530;
+  --nav-bg: rgba(13, 10, 26, 0.9);
+  --sidebar-active: #c084fc;
+  --shadow-color: #2d2640;
+  --accent: #c084fc;
+  --badge-bg: #0d0a1a;
+  --accent-hsl: 270 95% 75%;
+}
+
+/* Theme transitions */
+.theme-transitioning,
+.theme-transitioning * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* Accent highlight */
+.accent-border {
+  border-color: var(--accent) !important;
+}
+.accent-bg {
+  background-color: var(--accent) !important;
+  color: var(--background) !important;
+}
+
 /* Shimmer animation for loading states */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
@@ -98,8 +257,26 @@ pre::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 0; }
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-/* Neo shadows */
+/* Neo shadows - scaled hierarchy */
 .neo-depth {
+  border-width: 3px !important;
+  border-color: var(--foreground) !important;
+  box-shadow: 
+    1px 1px 0px var(--shadow-color), 2px 2px 0px var(--shadow-color),
+    3px 3px 0px var(--shadow-color), 4px 4px 0px var(--shadow-color);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: var(--card-bg);
+}
+.neo-depth:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 
+    1px 1px 0px var(--shadow-color), 2px 2px 0px var(--shadow-color),
+    3px 3px 0px var(--shadow-color), 4px 4px 0px var(--shadow-color),
+    5px 5px 0px var(--shadow-color), 6px 6px 0px var(--shadow-color);
+}
+
+/* Hero gets the full 8px shadow */
+.hero-depth {
   border-width: 3px !important;
   border-color: var(--foreground) !important;
   box-shadow: 
@@ -110,7 +287,7 @@ pre::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 0; }
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   background-color: var(--card-bg);
 }
-.neo-depth:hover {
+.hero-depth:hover {
   transform: translate(-3px, -3px);
   box-shadow: 
     1px 1px 0px var(--shadow-color), 2px 2px 0px var(--shadow-color),
@@ -126,18 +303,16 @@ pre::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 0; }
   border-color: var(--card-border) !important;
   box-shadow: 
     1px 1px 0px var(--card-border), 2px 2px 0px var(--card-border),
-    3px 3px 0px var(--card-border), 4px 4px 0px var(--card-border),
-    5px 5px 0px var(--card-border), 6px 6px 0px var(--card-border);
+    3px 3px 0px var(--card-border);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   background-color: var(--card-bg);
 }
 .neo-depth-zinc:hover {
-  transform: translate(-3px, -3px);
+  transform: translate(-2px, -2px);
   box-shadow: 
     1px 1px 0px var(--card-border), 2px 2px 0px var(--card-border),
     3px 3px 0px var(--card-border), 4px 4px 0px var(--card-border),
-    5px 5px 0px var(--card-border), 6px 6px 0px var(--card-border),
-    7px 7px 0px var(--card-border), 8px 8px 0px var(--card-border);
+    5px 5px 0px var(--card-border);
 }
 
 .neo-depth-btn {
@@ -210,15 +385,40 @@ pre::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 0; }
   border-color: rgba(251, 113, 133, 0.3);
 }
 
-/* Hover glow */
-.hover-glow { transition: box-shadow 0.3s; }
-.hover-glow:hover { box-shadow: 0 0 24px rgba(0,0,0,0.06); }
-.dark .hover-glow:hover { box-shadow: 0 0 24px rgba(255,255,255,0.04); }
-
 /* Word-wrap toggle */
 .code-wrap {
   white-space: pre-wrap !important;
   word-break: break-word !important;
+}
+
+/* Scroll progress bar */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--foreground);
+  z-index: 100;
+  transition: width 50ms linear;
+}
+
+/* Animated counter */
+.counter-value {
+  display: inline-block;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Font size variants */
+[data-font-size="sm"] .endpoint-path { font-size: 0.75rem !important; }
+[data-font-size="sm"] .endpoint-code { font-size: 0.625rem !important; }
+[data-font-size="md"] .endpoint-path { font-size: 0.875rem !important; }
+[data-font-size="md"] .endpoint-code { font-size: 0.6875rem !important; }
+[data-font-size="lg"] .endpoint-path { font-size: 1rem !important; }
+[data-font-size="lg"] .endpoint-code { font-size: 0.75rem !important; }
+
+/* Accent color on interactive elements */
+button:active, .btn-accent {
+  background-color: hsl(var(--accent-hsl, 0 0% 6%) / 0.1);
 }
 
 /* Tooltip */
@@ -267,4 +467,70 @@ pre::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 0; }
   border-left: 2px solid var(--foreground);
   padding-left: 12px;
   margin-left: 4px;
+}
+
+/* Scroll reveal animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Sticky section headers */
+.sticky-header {
+  position: sticky;
+  top: 4rem;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Code block hover */
+.code-line:hover {
+  background: hsl(var(--accent-hsl, 0 0% 6%) / 0.03);
+}
+.dark .code-line:hover {
+  background: hsl(var(--accent-hsl, 0 0% 98%) / 0.03);
+}
+
+/* Grid expand/collapse for code blocks */
+.code-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.code-grid.open {
+  grid-template-rows: 1fr;
+}
+.code-grid > div {
+  overflow: hidden;
+}
+
+/* Consistent type scale */
+.text-step-0 { font-size: 0.5625rem; } /* 9px  - body */
+.text-step-1 { font-size: 0.625rem; }  /* 10px - large body */
+.text-step-2 { font-size: 0.6875rem; } /* 11px - intro */
+.text-step-3 { font-size: 0.8125rem; } /* 13px - lead */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .shimmer {
+    animation: none !important;
+    background: var(--card-border) !important;
+  }
 }

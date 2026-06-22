@@ -119,7 +119,7 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search all endpoints, modules, descriptions..."
-            className="h-16 w-full bg-transparent px-3 text-sm text-[var(--foreground)] outline-none placeholder:text-[var(--muted)]/40 font-mono font-bold uppercase tracking-wider"
+            className="h-10 w-full bg-transparent px-3 text-sm text-[var(--foreground)] outline-none focus:outline-none focus-visible:outline-none border-0 placeholder:text-[var(--muted)]/40 font-mono font-bold uppercase tracking-wider"
             aria-label="Search query"
           />
           <button
