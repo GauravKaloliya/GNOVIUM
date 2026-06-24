@@ -58,7 +58,7 @@ export default function Navbar() {
             <div className="flex items-center gap-6 shrink-0">
               <Link href="/" className="flex items-center gap-3 group" aria-label="Gnovium App Home">
                 <div className="relative h-10 w-10 overflow-hidden rounded-none border-2 border-[var(--foreground)] bg-[var(--card-bg)] shadow-[3px_3px_0px_0px_var(--shadow-color)] transition-all group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none flex items-center justify-center">
-                  <span className="text-xl font-black font-mono text-[var(--foreground)]">G</span>
+                  <img src="/logo/gnovium.jpeg" alt="Gnovium" className="h-full w-full object-cover" />
                 </div>
                 <span className="text-sm font-black tracking-widest text-[var(--foreground)] transition-colors group-hover:opacity-70 uppercase font-mono">
                   GNOVIUM <span className="text-[10px] font-black px-2 py-0.5 rounded-none bg-[var(--foreground)] text-[var(--background)] border-2 border-[var(--foreground)] ml-1 tracking-normal font-sans">APP</span>
