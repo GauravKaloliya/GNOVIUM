@@ -1,5 +1,5 @@
 import type { Endpoint } from '../types';
-import { listEnvelope, j, authHeader, paginationParams, workspaceParam, workspaceId, userId } from '../common';
+import { listEnvelope, j, authHeader, paginationParams, workspaceParam, workspaceId, entityId, entityTypeId, userId } from '../common';
 
 export const activityEndpoints: Endpoint[] = [
   {
@@ -12,7 +12,7 @@ export const activityEndpoints: Endpoint[] = [
     headers: authHeader,
     parameters: [workspaceParam, ...paginationParams],
     response: listEnvelope([
-      { id: 'c7ad2e49-6322-4214-8cbd-8ec8a1dcdb8f', workspace_id: workspaceId, action: 'entity_created', actor_id: userId, target_id: 'fa82a0b1-12c8-47fb-ba2e-ff6a39226cb3', created_at: '2026-06-21T08:30:00Z' },
+      { id: 'c7ad2e49-6322-4214-8cbd-8ec8a1dcdb8f', workspace_id: workspaceId, user_id: userId, entity_id: entityId, block_id: null, action: 'entity.create', details: { title: 'Research Notes', entity_type_id: entityTypeId }, created_at: '2026-06-21T08:30:00Z' },
     ]),
   },
 ];

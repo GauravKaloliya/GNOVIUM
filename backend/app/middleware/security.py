@@ -12,6 +12,8 @@ PUBLIC_PREFIXES = ("/health",)
 def install_security_middleware(app):
     @app.before_request
     def enforce_request_security():
+        if request.method == "OPTIONS":
+            return
         if not _host_allowed(app):
             raise ForbiddenError("Host is not allowed")
         if not _origin_allowed(app):

@@ -70,7 +70,7 @@ export const blockEndpoints: Endpoint[] = [
     method: 'DELETE',
     path: '/blocks/<id>',
     summary: 'Delete block',
-    description: 'Soft-deletes a block. It can be restored via the entity version history.',
+    description: 'Deletes a block permanently.',
     headers: authHeader,
     parameters: [pathParam('block_id', 'Block ID')],
     response: itemEnvelope({ id: blockId, deleted_at: '2026-06-21T12:30:00Z' }),
@@ -90,7 +90,12 @@ export const blockEndpoints: Endpoint[] = [
         { id: '5a3978e0-dfeb-475d-911e-5451dd808dad', position: 200 },
       ],
     }),
-    response: j({ data: { reordered: 2 } }),
+    response: j({
+      data: [
+        { id: blockId, position: 100 },
+        { id: '5a3978e0-dfeb-475d-911e-5451dd808dad', position: 200 },
+      ],
+    }),
   },
   {
     id: 'blocks-entity-list',

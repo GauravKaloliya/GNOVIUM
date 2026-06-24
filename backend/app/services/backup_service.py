@@ -1,9 +1,12 @@
 import json
+import os
 from datetime import datetime
+
+from flask import current_app
 
 from app.extensions import db
 from app.models import Block, Comment, Entity, EntityPropertyValue, EntityType, File, Property, Relation, Tag
-from app.repositories.domain import EntityRepository
+from app.repositories import EntityRepository
 
 
 class BackupService:
@@ -20,11 +23,12 @@ class BackupService:
             ).all()
         )
         comments = Comment.query.filter_by(workspace_id=workspace_id, is_deleted=False).all()
+        files = File.query.filter_by(workspace_id=workspace_id, is_deleted=False).all()
 
         def serialize(records):
             return [
                 {c.key: str(getattr(r, c.key)) if hasattr(getattr(r, c.key), "isoformat") else getattr(r, c.key)
-                 for c in r.__table__.columns if c.key not in ("is_deleted",)}
+                 for c in r.__table__.columns}
                 for r in records
             ]
 
@@ -38,7 +42,19 @@ class BackupService:
             "tags": serialize(tags),
             "blocks": serialize(blocks),
             "comments": serialize(comments),
+            "files": serialize(files),
         }
+
+    def export_to_disk(self, workspace_id, output_dir=None):
+        data = self.export_workspace(workspace_id)
+        if output_dir is None:
+            output_dir = os.path.join(current_app.instance_path, "backups")
+        os.makedirs(output_dir, exist_ok=True)
+        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        path = os.path.join(output_dir, f"workspace_{workspace_id}_{timestamp}.json")
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2, default=str)
+        return path
 
     def import_workspace(self, workspace_id, data):
         counts = {"entity_types": 0, "entities": 0, "properties": 0, "relations": 0, "tags": 0, "blocks": 0, "comments": 0}

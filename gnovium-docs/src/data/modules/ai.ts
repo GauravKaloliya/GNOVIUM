@@ -18,7 +18,8 @@ export const aiEndpoints: Endpoint[] = [
     response: itemEnvelope({
       answer: 'Gnovium uses JWT access and refresh tokens with server-side session revocation. Access tokens expire after 30 minutes, refresh tokens after 14 days.',
       sources: [
-        { id: 'fa82a0b1-12c8-47fb-ba2e-ff6a39226cb3', title: 'Research Notes', content: 'Authentication is set up with JWT...', score: 0.95 },
+        { title: 'Architecture Overview', content: 'Authentication is set up with JWT...' },
+        { title: 'Project Alpha README', content: 'The system uses a microservices architecture...' },
       ],
     }),
   },

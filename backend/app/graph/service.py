@@ -1,6 +1,6 @@
 from collections import deque
 
-from app.repositories.domain import RelationRepository
+from app.repositories import RelationRepository
 
 
 class GraphService:

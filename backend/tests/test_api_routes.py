@@ -427,13 +427,13 @@ if state.get("file_id"):
     r = requests.get(f"{BASE}/files/{fid}", headers=auth_headers())
     assert_status("GET /files/<id>", r, 200)
 
-    # presign (no S3 bucket configured, should return enabled:false)
+    # presign (cloud-only — returns 404 in local mode)
     r = requests.post(
         f"{BASE}/files/presign",
         headers=auth_headers(),
         json={"object_key": "uploads/test/file.pdf", "content_type": "application/pdf"},
     )
-    assert_status("POST /files/presign", r, 200)
+    assert_status("POST /files/presign", r, 404)
 
     # link file to entity
     if state.get("entity_id"):

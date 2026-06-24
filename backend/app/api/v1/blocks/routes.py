@@ -1,8 +1,10 @@
 from flask import Blueprint, request
 
 from app.api.v1.helpers import item_response, list_response, pagination_args, raw_response, request_json
+from app.core.response import ok
+from app.core.serialization import model_to_dict
 from app.core.validation import load_schema
-from app.repositories.domain import BlockRepository
+from app.repositories import BlockRepository
 from app.schemas.domain import BlockCreateSchema, BlockUpdateSchema, MoveBlockSchema
 from app.services.block_service import BlockService
 from app.services.security import current_user_id, secured
@@ -13,8 +15,12 @@ bp = Blueprint("blocks", __name__)
 @bp.get("/")
 @secured
 def list_blocks():
+    entity_id = request.args.get("entity_id")
+    if entity_id:
+        blocks = BlockRepository().list_current(entity_id)
+        return raw_response([model_to_dict(b) for b in blocks])
     args = pagination_args()
-    return list_response(BlockRepository().list({"entity_id": request.args.get("entity_id")}, args["page"], args["per_page"]))
+    return list_response(BlockRepository().list(args["page"], args["per_page"]))
 
 
 @bp.post("/")
@@ -44,7 +50,7 @@ def move_block(block_id):
 @bp.delete("/<string:block_id>")
 @secured
 def delete_block(block_id):
-    return item_response(BlockService().delete(block_id))
+    return item_response(BlockService().delete(block_id, current_user_id()))
 
 
 @bp.post("/reorder")
@@ -63,5 +69,5 @@ def reorder_blocks():
 @bp.get("/entity/<string:entity_id>")
 @secured
 def entity_blocks(entity_id):
-    args = pagination_args()
-    return list_response(BlockRepository().list({"entity_id": entity_id}, args["page"], args["per_page"]))
+    blocks = BlockRepository().list_current(entity_id)
+    return raw_response([model_to_dict(b) for b in blocks])

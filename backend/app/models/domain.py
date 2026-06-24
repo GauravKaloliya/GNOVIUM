@@ -1,12 +1,13 @@
 from datetime import datetime
 
 from sqlalchemy import CheckConstraint, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from app.extensions import db
 from app.models.base import CreatedOnlyMixin, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 from app.models.types import TSVectorType, Vector
 
-FK = db.String(36)
+FK = PG_UUID(as_uuid=False)
 
 
 # ─────────────────────────────────────────────
@@ -40,15 +41,24 @@ class Session(UUIDPrimaryKeyMixin, db.Model):
 
 class Workspace(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
     __tablename__ = "workspaces"
+    __table_args__ = (
+        CheckConstraint("deployment_mode IN ('local', 'cloud')", name="ck_workspace_deployment_mode"),
+    )
 
     owner_id = db.Column(FK, db.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
     name = db.Column(db.Text, nullable=False)
     description = db.Column(db.Text)
     settings = db.Column(db.JSON, default=dict)
+    deployment_mode = db.Column(db.Text, default="local")
+    sync_enabled = db.Column(db.Boolean, default=False)
+    cloud_workspace_id = db.Column(db.Text)
 
 
 class WorkspaceMember(UUIDPrimaryKeyMixin, SoftDeleteMixin, db.Model):
     __tablename__ = "workspace_members"
+    __table_args__ = (
+        CheckConstraint("role IN ('owner', 'admin', 'editor', 'viewer')", name="ck_workspace_member_role"),
+    )
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     user_id = db.Column(FK, db.ForeignKey("users.id", ondelete="RESTRICT"), nullable=False)
@@ -63,9 +73,6 @@ class WorkspaceMember(UUIDPrimaryKeyMixin, SoftDeleteMixin, db.Model):
 
 class EntityType(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model):
     __tablename__ = "entity_types"
-    __table_args__ = (
-        UniqueConstraint("workspace_id", "name", name="uq_entity_types_workspace_name"),
-    )
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     name = db.Column(db.Text, nullable=False)
@@ -91,9 +98,6 @@ class Entity(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
 
 class Block(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
     __tablename__ = "blocks"
-    __table_args__ = (
-        UniqueConstraint("entity_id", "position", name="uq_blocks_entity_position"),
-    )
 
     entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="CASCADE"), nullable=False)
     parent_block_id = db.Column(FK, db.ForeignKey("blocks.id", ondelete="CASCADE"))
@@ -108,9 +112,6 @@ class Block(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
 
 class Property(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model):
     __tablename__ = "properties"
-    __table_args__ = (
-        UniqueConstraint("workspace_id", "name", "entity_type_id", name="uq_properties_workspace_name_type"),
-    )
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     entity_type_id = db.Column(FK, db.ForeignKey("entity_types.id", ondelete="RESTRICT"))
@@ -135,7 +136,6 @@ class Relation(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model)
     __tablename__ = "relations"
     __table_args__ = (
         CheckConstraint("source_entity_id != target_entity_id", name="no_self_relation"),
-        UniqueConstraint("source_entity_id", "target_entity_id", "relation_type", name="unique_relation"),
     )
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
@@ -239,6 +239,7 @@ class MergeConflict(UUIDPrimaryKeyMixin, db.Model):
 class EntityEvent(UUIDPrimaryKeyMixin, CreatedOnlyMixin, db.Model):
     __tablename__ = "entity_events"
 
+    workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="RESTRICT"), nullable=False)
     changeset_id = db.Column(FK, db.ForeignKey("changesets.id", ondelete="SET NULL"))
     event_type = db.Column(db.Text, nullable=False)
@@ -254,13 +255,13 @@ class Embedding(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     entity_id = db.Column(FK, db.ForeignKey("entities.id", ondelete="CASCADE"))
-    block_id = db.Column(FK, db.ForeignKey("blocks.id", ondelete="CASCADE"))
+    block_id = db.Column(FK, db.ForeignKey("blocks.id", ondelete="SET NULL"))
     model = db.Column(db.Text, nullable=False)
     embedding = db.Column(Vector(1024))
     content_hash = db.Column(db.Text, nullable=False)
 
 
-class SearchDocument(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model):
+class SearchDocument(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, db.Model):
     __tablename__ = "search_documents"
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
@@ -364,6 +365,9 @@ class SyncOperation(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.M
 
 class Job(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model):
     __tablename__ = "jobs"
+    __table_args__ = (
+        CheckConstraint("status IN ('pending', 'running', 'completed', 'failed')", name="ck_job_status"),
+    )
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"))
     job_type = db.Column(db.Text, nullable=False)
@@ -377,9 +381,6 @@ class Job(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model):
 
 class Tag(UUIDPrimaryKeyMixin, CreatedOnlyMixin, SoftDeleteMixin, db.Model):
     __tablename__ = "tags"
-    __table_args__ = (
-        UniqueConstraint("workspace_id", "name", name="uq_tags_workspace_name"),
-    )
 
     workspace_id = db.Column(FK, db.ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False)
     name = db.Column(db.Text, nullable=False)

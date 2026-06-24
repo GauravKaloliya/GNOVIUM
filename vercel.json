@@ -2,27 +2,55 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "cd gnovium-docs && npm install",
   "buildCommand": "cd gnovium-docs && npm run build",
-  "outputDirectory": ".",
+  "outputDirectory": "gnovium-docs/out",
+  "env": {
+    "GNOVIUM_MODE": "cloud",
+    "CORS_ORIGINS": "https://gnovium.com,https://www.gnovium.com,https://*.vercel.app,http://localhost:3000",
+    "ALLOWED_HOSTS": "gnovium.com,www.gnovium.com,api.gnovium.com,*.vercel.app,localhost,127.0.0.1",
+    "REQUIRE_REDIS": "false",
+    "AUTO_CREATE_TABLES": "false",
+    "AWS_REGION": "ap-south-1",
+    "S3_BUCKET": "gnovium",
+    "S3_PUBLIC_BASE_URL": "https://gnovium.s3.ap-south-1.amazonaws.com"
+  },
+  "headers": [
+    {
+      "source": "/api/v1/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, Accept, Origin, X-Requested-With" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, Accept, Origin, X-Requested-With" }
+      ]
+    }
+  ],
   "routes": [
     {
       "src": "/api/v1/docs(?:/)?",
-      "dest": "/gnovium-docs/out/index.html"
+      "dest": "/index.html"
     },
     {
       "src": "/api/v1/docs/(.*)",
-      "dest": "/gnovium-docs/out/$1"
+      "dest": "/$1"
     },
     {
       "src": "/api/v1/(.*)",
-      "dest": "/backend/run.py"
+      "dest": "/api/index.py"
     },
     {
       "src": "/api/(.*)",
-      "dest": "/backend/run.py"
+      "dest": "/api/index.py"
     },
     {
       "src": "/health",
-      "dest": "/backend/run.py"
+      "dest": "/api/index.py"
     },
     {
       "src": "/",
@@ -33,7 +61,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/gnovium-docs/out/$1"
+      "dest": "/$1"
     }
   ]
 }

@@ -2,13 +2,15 @@
 
 import { useState, useMemo, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import {
   Search, ChevronDown, ChevronRight, Clock, Star, X, Copy, Check,
-  ArrowLeft, Terminal, ExternalLink, Layers, Code2, BookOpen,
+  ArrowLeft, Terminal, Code2, BookOpen, Play,
 } from 'lucide-react';
 import type { Endpoint } from '@/data';
 import { getModuleIcon, getModuleColor } from '@/data/icons';
-import Tooltip from '@/components/Tooltip';
+
+const ApiPlayground = dynamic(() => import('@/components/ApiPlayground'), { ssr: false });
 
 interface MobileDocsProps {
   endpoints: Endpoint[];
@@ -37,6 +39,7 @@ export default function MobileDocs({
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [activeTab, setActiveTab] = useState<'docs' | 'recent' | 'pinned'>('docs');
 
   const activeEndpoint = endpoints.find(ep => ep.id === activeEndpointId);
 
@@ -92,6 +95,7 @@ export default function MobileDocs({
     DELETE: [
       { code: '200', description: 'Deleted' },
       { code: '404', description: 'Not found' },
+      { code: '400', description: 'Bad request' },
       { code: '401', description: 'Unauthorized' },
       { code: '409', description: 'Conflict' },
     ],
@@ -100,7 +104,7 @@ export default function MobileDocs({
   const LANGS = ['curl', 'js', 'python', 'typescript'] as const;
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-[var(--background)] pb-16">
       {/* Sticky search header */}
       <div className="sticky top-0 z-20 bg-[var(--background)] border-b-2 border-[var(--border)] px-4 py-3">
         <div className="flex items-center gap-3">
@@ -118,7 +122,7 @@ export default function MobileDocs({
       </div>
 
       {/* Content area */}
-      <div className="px-4 pb-32 space-y-4 mt-4">
+      <div className="px-4 pb-8 space-y-4 mt-4">
         {/* Compact hero stat */}
         <div className="flex items-center justify-between border-2 border-[var(--border)] p-3 neo-depth-zinc">
           <div>
@@ -131,106 +135,189 @@ export default function MobileDocs({
           </div>
         </div>
 
-        {/* Recently viewed */}
-        {recentlyViewed.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-3.5 w-3.5 text-[var(--muted)]" />
-              <span className="text-[10px] font-mono font-bold text-[var(--muted)] uppercase tracking-wider">Recent</span>
+        {/* Tab content */}
+        {activeTab === 'docs' && (
+          <>
+            {/* Recently viewed */}
+            {recentlyViewed.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-3.5 w-3.5 text-[var(--muted)]" />
+                  <span className="text-[10px] font-mono font-bold text-[var(--muted)] uppercase tracking-wider">Recent</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1 -mx-4 px-4">
+                  {recentlyViewed.map(id => {
+                    const ep = endpoints.find(e => e.id === id);
+                    if (!ep) return null;
+                    const mc = getModuleColor(ep.module);
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => handleEndpointTap(id)}
+                        className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-2 border-[var(--border)] text-[11px] font-mono font-bold text-[var(--foreground)] cursor-pointer whitespace-nowrap"
+                        style={{ borderLeftColor: theme === 'dark' ? mc.dark : mc.light, borderLeftWidth: 3 }}
+                      >
+                        <span className={`text-[9px] font-black ${
+                          ep.method === 'GET' ? 'text-emerald-500' :
+                          ep.method === 'POST' ? 'text-sky-500' :
+                          ep.method === 'PATCH' ? 'text-amber-500' : 'text-rose-500'
+                        }`}>{ep.method}</span>
+                        <span className="truncate max-w-[120px]">{ep.path}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Module accordion */}
+            <div className="space-y-3">
+              {Object.entries(groupedModules).map(([moduleName, eps]) => {
+                const isExpanded = expandedModule === moduleName;
+                const mc = getModuleColor(moduleName);
+                const viewed = eps.filter(e => viewedEndpoints.has(e.id)).length;
+                return (
+                  <div key={moduleName} className="border-2 border-[var(--border)] overflow-hidden">
+                    <button
+                      onClick={() => toggleModule(moduleName)}
+                      className="w-full flex items-center gap-3 px-4 py-3.5 cursor-pointer text-left"
+                      style={{
+                        borderLeft: `3px solid ${theme === 'dark' ? mc.dark : mc.light}`,
+                        background: `${theme === 'dark' ? mc.dark : mc.light}06`,
+                      }}
+                      aria-expanded={isExpanded}
+                    >
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        {getModuleIcon(moduleName)}
+                        <span className="text-sm font-black font-mono text-[var(--foreground)] truncate">{moduleName}</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-[var(--muted)] shrink-0">{eps.length} &middot; {viewed}</span>
+                      {isExpanded ? <ChevronDown className="h-4 w-4 text-[var(--muted)] shrink-0" /> : <ChevronRight className="h-4 w-4 text-[var(--muted)] shrink-0" />}
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          key="content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.15, ease: 'easeInOut' }}
+                          className="overflow-hidden border-t border-[var(--border)]"
+                        >
+                          <div className="space-y-0">
+                            {eps.map(ep => {
+                              const isPinned = pinnedEndpoints.has(ep.id);
+                              const isViewed = viewedEndpoints.has(ep.id);
+                              return (
+                                <button
+                                  key={ep.id}
+                                  onClick={() => handleEndpointTap(ep.id)}
+                                  className="w-full flex items-center gap-3 px-4 py-3.5 text-left cursor-pointer border-b border-[var(--border)] last:border-b-0 active:bg-[var(--code-bg)] transition-colors"
+                                >
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    {methodBadge(ep.method)}
+                                    <span className="text-sm font-mono font-bold text-[var(--foreground)] truncate">{ep.path}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    {isPinned && <Star className="h-3 w-3 fill-amber-400 text-amber-400" />}
+                                    {isViewed && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-none" />}
+                                    <ChevronRight className="h-3.5 w-3.5 text-[var(--muted)]" />
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1 -mx-4 px-4">
-              {recentlyViewed.map(id => {
+          </>
+        )}
+
+        {/* Recent tab */}
+        {activeTab === 'recent' && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 border-b-2 border-[var(--border)] pb-2 mb-3">
+              <Clock className="h-4 w-4 text-[var(--muted)]" />
+              <span className="text-[10px] font-black font-mono uppercase tracking-widest text-[var(--muted)]">Recently Viewed</span>
+            </div>
+            {recentlyViewed.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-[var(--border)]">
+                <Terminal className="h-10 w-10 mb-3 text-[var(--muted)]" strokeWidth={1.5} />
+                <p className="text-xs font-mono text-[var(--muted)] font-bold">No recently viewed endpoints</p>
+                <p className="text-[10px] font-mono text-[var(--muted)] mt-1">Tap on an endpoint to view it</p>
+              </div>
+            ) : (
+              recentlyViewed.map(id => {
                 const ep = endpoints.find(e => e.id === id);
                 if (!ep) return null;
-                const mc = getModuleColor(ep.module);
                 return (
                   <button
                     key={id}
                     onClick={() => handleEndpointTap(id)}
-                    className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-2 border-[var(--border)] text-[11px] font-mono font-bold text-[var(--foreground)] cursor-pointer whitespace-nowrap"
-                    style={{ borderLeftColor: theme === 'dark' ? mc.dark : mc.light, borderLeftWidth: 3 }}
+                    className="w-full flex items-center gap-3 px-4 py-3 border-2 border-[var(--border)] text-left cursor-pointer hover:bg-[var(--card-bg)] transition-colors"
                   >
-                    <span className={`text-[9px] font-black ${
-                      ep.method === 'GET' ? 'text-emerald-500' :
-                      ep.method === 'POST' ? 'text-sky-500' :
-                      ep.method === 'PATCH' ? 'text-amber-500' : 'text-rose-500'
-                    }`}>{ep.method}</span>
-                    <span className="truncate max-w-[120px]">{ep.path}</span>
+                    {methodBadge(ep.method)}
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-mono font-bold text-[var(--foreground)] truncate block">{ep.path}</span>
+                      <span className="text-[10px] font-mono text-[var(--muted)] truncate block">{ep.summary}</span>
+                    </div>
+                    <ChevronRight className="h-3.5 w-3.5 text-[var(--muted)] shrink-0" />
                   </button>
                 );
-              })}
-            </div>
+              })
+            )}
           </div>
         )}
 
-        {/* Module accordion */}
-        <div className="space-y-3">
-          {Object.entries(groupedModules).map(([moduleName, eps]) => {
-            const isExpanded = expandedModule === moduleName;
-            const mc = getModuleColor(moduleName);
-            const viewed = eps.filter(e => viewedEndpoints.has(e.id)).length;
-            return (
-              <div key={moduleName} className="border-2 border-[var(--border)] overflow-hidden">
-                <button
-                  onClick={() => toggleModule(moduleName)}
-                  className="w-full flex items-center gap-3 px-4 py-3.5 cursor-pointer text-left"
-                  style={{
-                    borderLeft: `3px solid ${theme === 'dark' ? mc.dark : mc.light}`,
-                    background: `${theme === 'dark' ? mc.dark : mc.light}06`,
-                  }}
-                  aria-expanded={isExpanded}
-                >
-                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                    {getModuleIcon(moduleName)}
-                    <span className="text-sm font-black font-mono text-[var(--foreground)] truncate">{moduleName}</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-[var(--muted)] shrink-0">{eps.length} · {viewed}</span>
-                  {isExpanded ? <ChevronDown className="h-4 w-4 text-[var(--muted)] shrink-0" /> : <ChevronRight className="h-4 w-4 text-[var(--muted)] shrink-0" />}
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {isExpanded && (
-                    <motion.div
-                      key="content"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 200, damping: 24, mass: 0.8 }}
-                      className="overflow-hidden border-t border-[var(--border)]"
-                    >
-                      <div className="space-y-0">
-                        {eps.map(ep => {
-                          const isPinned = pinnedEndpoints.has(ep.id);
-                          const isViewed = viewedEndpoints.has(ep.id);
-                          return (
-                            <button
-                              key={ep.id}
-                              onClick={() => handleEndpointTap(ep.id)}
-                              className="w-full flex items-center gap-3 px-4 py-3.5 text-left cursor-pointer border-b border-[var(--border)] last:border-b-0 active:bg-[var(--code-bg)] transition-colors"
-                            >
-                              <div className="flex items-center gap-2 flex-1 min-w-0">
-                                {methodBadge(ep.method)}
-                                <span className="text-sm font-mono font-bold text-[var(--foreground)] truncate">{ep.path}</span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                {isPinned && <Star className="h-3 w-3 fill-amber-400 text-amber-400" />}
-                                {isViewed && <span className="w-1.5 h-1.5 bg-emerald-500 rounded-none" />}
-                                <ChevronRight className="h-3.5 w-3.5 text-[var(--muted)]" />
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+        {/* Pinned tab */}
+        {activeTab === 'pinned' && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 border-b-2 border-[var(--border)] pb-2 mb-3">
+              <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+              <span className="text-[10px] font-black font-mono uppercase tracking-widest text-[var(--muted)]">Pinned Endpoints</span>
+              <span className="text-[10px] font-mono text-[var(--muted)] ml-auto">{pinnedEndpoints.size} pinned</span>
+            </div>
+            {pinnedEndpoints.size === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-[var(--border)]">
+                <Star className="h-10 w-10 mb-3 text-[var(--muted)]" strokeWidth={1.5} />
+                <p className="text-xs font-mono text-[var(--muted)] font-bold">No pinned endpoints</p>
+                <p className="text-[10px] font-mono text-[var(--muted)] mt-1">Pin endpoints for quick access</p>
               </div>
-            );
-          })}
-        </div>
+            ) : (
+              [...pinnedEndpoints].map(id => {
+                const ep = endpoints.find(e => e.id === id);
+                if (!ep) return null;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => handleEndpointTap(id)}
+                    className="w-full flex items-center gap-3 px-4 py-3 border-2 border-amber-500/30 text-left cursor-pointer hover:bg-amber-500/5 transition-colors"
+                  >
+                    {methodBadge(ep.method)}
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-mono font-bold text-[var(--foreground)] truncate block">{ep.path}</span>
+                      <span className="text-[10px] font-mono text-[var(--muted)] truncate block">{ep.summary}</span>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onTogglePin(ep.id); }}
+                      className="p-1 border border-amber-500/30 bg-amber-500/10 text-amber-400 cursor-pointer shrink-0"
+                    >
+                      <Star className="h-3 w-3 fill-amber-400" />
+                    </button>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
 
         {/* Empty state */}
-        {Object.keys(groupedModules).length === 0 && (
+        {Object.keys(groupedModules).length === 0 && activeTab === 'docs' && (
           <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-[var(--border)]">
             <Terminal className="h-10 w-10 mb-3 text-[var(--muted)]" strokeWidth={1.5} />
             <h3 className="text-sm font-black text-[var(--muted)] uppercase tracking-wider">No endpoints match</h3>
@@ -248,7 +335,15 @@ export default function MobileDocs({
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'tween', duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 100 }}
+            dragElastic={0.3}
+            onDragEnd={(_, info) => {
+              if (info.offset.x > 80) {
+                setShowDetail(false);
+              }
+            }}
+            transition={{ type: 'tween', duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-50 bg-[var(--background)] overflow-y-auto"
             style={{ willChange: 'transform' }}
           >
@@ -269,7 +364,7 @@ export default function MobileDocs({
               </div>
             </div>
 
-            <div className="px-4 pb-8 space-y-5 mt-4">
+            <div className="px-4 pb-24 space-y-5 mt-4">
               {/* Summary + module */}
               <div>
                 <h2 className="text-base font-black text-[var(--foreground)]">{activeEndpoint.summary}</h2>
@@ -299,7 +394,9 @@ export default function MobileDocs({
               {/* Code snippet */}
               <div className="border-2 border-[var(--border)] overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-2.5 bg-[var(--card-bg)] border-b-2 border-[var(--border)]">
-                  <span className="text-[10px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">cURL</span>
+                  <span className="text-[10px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">
+                    <Code2 className="h-3 w-3 inline mr-1.5" />cURL
+                  </span>
                   <button
                     onClick={() => onCopy(getSnippet(activeEndpoint, 'curl'), 'mobile-detail')}
                     className="p-1.5 border border-[var(--border)] cursor-pointer"
@@ -313,7 +410,9 @@ export default function MobileDocs({
               {/* Response */}
               <div className="border-2 border-[var(--border)] overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-2.5 bg-[var(--card-bg)] border-b-2 border-[var(--border)]">
-                  <span className="text-[10px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">Response</span>
+                  <span className="text-[10px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">
+                    <Terminal className="h-3 w-3 inline mr-1.5" />Response
+                  </span>
                   <button
                     onClick={() => onCopy(activeEndpoint.response, 'mobile-resp')}
                     className="p-1.5 border border-[var(--border)] cursor-pointer"
@@ -341,6 +440,15 @@ export default function MobileDocs({
                 </div>
               )}
 
+              {/* Try It playground */}
+              <div onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Play className="h-3.5 w-3.5 text-[var(--muted)]" />
+                  <span className="text-[10px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">Try It</span>
+                </div>
+                <ApiPlayground endpoint={activeEndpoint} />
+              </div>
+
               {/* Copy URL */}
               <button
                 onClick={() => onCopy(`${window.location.origin}?endpoint=${activeEndpoint.id}`, 'mobile-url')}
@@ -352,6 +460,35 @@ export default function MobileDocs({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Bottom tab bar */}
+      <div className="fixed bottom-0 inset-x-0 z-30 border-t-2 border-[var(--foreground)] bg-[var(--card-bg)] pb-[env(safe-area-inset-bottom)] flex">
+        {[
+          { id: 'docs', label: 'Docs', icon: BookOpen },
+          { id: 'recent', label: 'Recent', icon: Clock },
+          { id: 'pinned', label: 'Pinned', icon: Star },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(8);
+                setActiveTab(tab.id as typeof activeTab);
+              }}
+              className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[9px] font-mono font-black uppercase tracking-wider transition-colors cursor-pointer border-r-2 border-[var(--border)] last:border-r-0 ${
+                isActive
+                  ? 'text-[var(--foreground)] bg-[var(--foreground)]/5'
+                  : 'text-[var(--muted)] hover:text-[var(--foreground)]'
+              }`}
+            >
+              <Icon className="h-4 w-4 stroke-[2.5]" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

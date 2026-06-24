@@ -4,7 +4,7 @@ from sqlalchemy import func
 
 from app.extensions import db
 from app.models import Entity, Relation
-from app.repositories.domain import GovernanceReportRepository
+from app.repositories import GovernanceReportRepository
 
 
 class GovernanceService:

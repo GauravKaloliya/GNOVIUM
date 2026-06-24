@@ -2,7 +2,7 @@ from flask import Blueprint, request
 
 from app.api.v1.helpers import item_response, list_response, pagination_args, request_json
 from app.core.validation import load_schema
-from app.repositories.domain import NotificationRepository
+from app.repositories import NotificationRepository
 from app.schemas.domain import NotificationCreateSchema
 from app.services.notification_service import NotificationService
 from app.services.security import secured

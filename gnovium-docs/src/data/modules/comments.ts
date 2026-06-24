@@ -63,7 +63,7 @@ export const commentEndpoints: Endpoint[] = [
     method: 'DELETE',
     path: '/comments/<id>',
     summary: 'Delete comment',
-    description: 'Soft-deletes a comment. Threaded replies are preserved.',
+    description: 'Deletes a comment permanently. Threaded replies are preserved.',
     headers: authHeader,
     parameters: [pathParam('comment_id', 'Comment ID')],
     response: itemEnvelope({ id: commentId, deleted_at: '2026-06-21T12:30:00Z' }),

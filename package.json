@@ -1,0 +1,16 @@
+{
+  "name": "gnovium",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gnovium — Knowledge Operating System",
+  "workspaces": [
+    "electron",
+    "gnovium-docs",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:electron": "npm run dev --workspace=electron",
+    "dev:docs": "npm run dev --workspace=gnovium-docs",
+    "build:docs": "npm run build --workspace=gnovium-docs"
+  }
+}

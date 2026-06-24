@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Search, FileText, ArrowRight, X, Star, ExternalLink } from 'lucide-react';
+import { Search, FileText, ArrowRight, X, Star, ExternalLink, Terminal, BookOpen } from 'lucide-react';
 import { ENDPOINTS, Endpoint } from '@/data';
 
 interface SearchPaletteProps {
@@ -80,9 +80,9 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
     return (
       <>
         {text.slice(0, idx)}
-        <mark className="bg-[var(--foreground)] text-[var(--background)] font-bold px-0.5">
+        <span className="font-bold underline decoration-2 underline-offset-2">
           {text.slice(idx, idx + query.length)}
-        </mark>
+        </span>
         {text.slice(idx + query.length)}
       </>
     );
@@ -90,7 +90,7 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
 
   const methodBadge = (method: string) => {
     const cls = method === 'GET' ? 'method-get' : method === 'POST' ? 'method-post' : method === 'PATCH' ? 'method-patch' : 'method-delete';
-    return `text-[10px] font-black px-2 py-0.5 border-2 ${cls} rounded-none`;
+    return `text-[11px] font-black px-2 py-0.5 border-2 ${cls} rounded-none`;
   };
 
   return (
@@ -118,13 +118,22 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search all endpoints, modules, descriptions..."
-            className="h-10 w-full bg-transparent px-3 text-sm text-[var(--foreground)] outline-none focus:outline-none focus-visible:outline-none border-0 placeholder:text-[var(--muted)]/40 font-mono font-bold uppercase tracking-wider"
+            placeholder="Search endpoints, modules, descriptions..."
+            className="h-12 w-full bg-transparent px-3 text-sm text-[var(--foreground)] outline-none focus:outline-none focus-visible:outline-none border-0 placeholder:text-[var(--muted)]/40 font-mono font-bold"
             aria-label="Search query"
           />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="p-1 mr-1 hover:bg-[var(--code-bg)] border border-transparent hover:border-[var(--border)] transition-all cursor-pointer"
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4 text-[var(--muted)]" />
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="p-1 hover:bg-[var(--card-bg)] border border-transparent hover:border-[var(--border)] transition-all cursor-pointer"
+            className="p-1 hover:bg-[var(--code-bg)] border border-transparent hover:border-[var(--border)] transition-all cursor-pointer"
             aria-label="Close search"
           >
             <X className="h-5 w-5 text-[var(--muted)] hover:text-[var(--foreground)]" />
@@ -133,19 +142,18 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
 
         {/* Results */}
         <div className="max-h-[460px] overflow-y-auto p-3 scrollbar-thin space-y-1.5">
-          {/* Founder Card — Premium */}
+          {/* Founder Card */}
           <button
             onClick={() => {
               window.open('https://www.linkedin.com/in/gaurav-kaloliya-b44569417', '_blank');
               onClose();
             }}
             onMouseEnter={() => setSelectedIndex(0)}
-            className={`w-full flex items-center justify-between px-4 py-4 rounded-none text-left transition-all border-2 cursor-pointer
-              ${
-                selectedIndex === 0
-                  ? 'border-[var(--foreground)] bg-[var(--card-bg)] neo-depth'
-                  : 'border-transparent hover:border-[var(--border)] hover:bg-[var(--card-bg)]'
-              }`}
+            className={`w-full flex items-center justify-between px-4 py-4 rounded-none text-left transition-all border-2 cursor-pointer ${
+              selectedIndex === 0
+                ? 'border-[var(--foreground)] bg-[var(--card-bg)] neo-depth'
+                : 'border-transparent hover:border-[var(--border)] hover:bg-[var(--card-bg)]'
+            }`}
             aria-label="Visit founder profile"
           >
             <div className="flex items-center gap-4">
@@ -160,14 +168,14 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="text-[9px] font-black font-mono uppercase tracking-[0.2em] text-[var(--muted)]">FOUNDER &amp; CREATOR</span>
+                  <span className="text-[10px] font-black font-mono uppercase tracking-[0.2em] text-[var(--muted)]">Founder &amp; Creator</span>
                   <span className="text-sm font-black font-mono text-[var(--foreground)]">Gaurav Kaloliya</span>
-                  <span className="px-1.5 py-0.5 border border-[var(--border)] text-[8px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">Gnovium</span>
+                  <span className="px-1.5 py-0.5 border border-[var(--border)] text-[9px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">Gnovium</span>
                 </div>
                 <p className="text-xs text-[var(--muted)] mt-1 font-mono max-w-md">
                   &ldquo;Knowledge should behave like a living system. I built Gnovium to make that vision real.&rdquo;
                 </p>
-                <div className="flex gap-4 mt-2 text-[10px] font-mono">
+                <div className="flex gap-4 mt-2 text-[11px] font-mono">
                   <span className="text-[var(--muted)] hover:text-[var(--foreground)] flex items-center gap-1">
                     <ExternalLink className="h-3 w-3" /> LinkedIn
                   </span>
@@ -179,19 +187,34 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
             </div>
             {selectedIndex === 0 && (
               <div className="text-[var(--foreground)] font-bold text-xs flex items-center gap-1.5 font-mono">
-                VISIT PROFILE <ArrowRight className="h-3.5 w-3.5" />
+                Visit Profile <ArrowRight className="h-3.5 w-3.5" />
               </div>
             )}
           </button>
 
-          {/* Regular Results */}
+          {/* No results state */}
           {results.length === 0 && query.trim() ? (
-            <div className="flex flex-col items-center justify-center py-12 text-[var(--muted)]">
-              <FileText className="h-12 w-12 stroke-[1.5] mb-2 opacity-40" />
-              <p className="text-sm font-bold font-mono uppercase tracking-wider opacity-60">No matching endpoints found</p>
+            <div className="flex flex-col items-center justify-center py-12 text-[var(--muted)] border-2 border-dashed border-[var(--border)] mx-1">
+              <Terminal className="h-12 w-12 stroke-[1.5] mb-3 opacity-30" />
+              <p className="text-sm font-bold font-mono mb-1">
+                No endpoints match &ldquo;{query}&rdquo;
+              </p>
+              <p className="text-[11px] font-mono opacity-60 text-center max-w-xs">
+                Try a different module, method, or search term.
+              </p>
             </div>
           ) : (
             <div className="space-y-1">
+              {/* Category header */}
+              {results.length > 0 && (
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-[var(--border)] mb-1">
+                  <BookOpen className="h-3.5 w-3.5 text-[var(--muted)]" />
+                  <span className="text-[10px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">
+                    Endpoints ({results.length})
+                  </span>
+                  <div className="flex-1 divider-subtle" />
+                </div>
+              )}
               {results.map((ep, index) => {
                 const isSelected = index + 1 === selectedIndex;
                 return (
@@ -210,8 +233,8 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
                       <span className={methodBadge(ep.method)}>{ep.method}</span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-[var(--muted)] uppercase tracking-widest">{highlightMatch(ep.module)}</span>
-                          <span className="text-xs text-[var(--foreground)] font-mono truncate">{highlightMatch(ep.path)}</span>
+                          <span className="text-[11px] font-black text-[var(--muted)] uppercase tracking-widest">{highlightMatch(ep.module)}</span>
+                          <span className="text-sm text-[var(--foreground)] font-mono truncate">{highlightMatch(ep.path)}</span>
                         </div>
                         <p className="text-[11px] text-[var(--muted)] mt-0.5 truncate font-mono">{highlightMatch(ep.summary)}</p>
                       </div>
@@ -228,18 +251,18 @@ export default function SearchPalette({ onClose }: SearchPaletteProps) {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between border-t-2 border-[var(--border)] bg-[var(--card-bg)] px-4 py-3 text-[10px] text-[var(--muted)] font-bold uppercase tracking-wider">
+        {/* Footer with keyboard hints */}
+        <div className="flex items-center justify-between border-t-2 border-[var(--border)] bg-[var(--card-bg)] px-4 py-3 text-[11px] text-[var(--muted)] font-bold uppercase tracking-wider">
           <div className="flex items-center gap-4 font-mono">
             <span className="flex items-center gap-1.5">
-              <kbd className="px-2 py-0.5 rounded-none border-2 border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)]">↑↓</kbd> Navigate
+              <kbd className="px-2 py-0.5 rounded-none border-2 border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)] text-[10px]">↑↓</kbd> Navigate
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className="px-2 py-0.5 rounded-none border-2 border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)]">Enter</kbd> Select
+              <kbd className="px-2 py-0.5 rounded-none border-2 border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)] text-[10px]">Enter</kbd> Select
             </span>
           </div>
           <span className="flex items-center gap-1.5 font-mono">
-            <kbd className="px-2 py-0.5 rounded-none border-2 border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)]">Esc</kbd> Close
+            <kbd className="px-2 py-0.5 rounded-none border-2 border-[var(--border)] bg-[var(--card-bg)] text-[var(--foreground)] text-[10px]">Esc</kbd> Close
           </span>
         </div>
       </motion.div>

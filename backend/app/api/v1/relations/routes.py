@@ -4,7 +4,7 @@ from app.api.v1.helpers import item_response, list_response, raw_response, pagin
 from app.core.serialization import model_to_dict
 from app.core.validation import load_schema
 from app.graph.service import GraphService
-from app.repositories.domain import RelationRepository
+from app.repositories import RelationRepository
 from app.schemas.domain import RelationCreateSchema
 from app.services.relation_service import RelationService
 from app.services.security import current_user_id, secured
@@ -34,7 +34,7 @@ def get_relation(relation_id):
 @bp.delete("/<string:relation_id>")
 @secured
 def delete_relation(relation_id):
-    return item_response(RelationService().delete(relation_id))
+    return item_response(RelationService().delete(relation_id, current_user_id()))
 
 
 @bp.get("/entity/<string:entity_id>")

@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
+from flask import current_app
 from sqlalchemy import func
 
 from app.extensions import db
-from app.models import Block, Comment, Entity, Relation, User, Workspace, WorkspaceMember
+from app.models import Block, Comment, Entity, Relation, Workspace
 
 
 class DashboardService:
@@ -43,9 +44,13 @@ class DashboardService:
             Comment.workspace_id == workspace_id, Comment.is_deleted.is_(False)
         ).count()
 
-        member_count = WorkspaceMember.query.filter(
-            WorkspaceMember.workspace_id == workspace_id, WorkspaceMember.is_deleted.is_(False)
-        ).count()
+        if current_app.config.get("GNOVIUM_MODE") == "cloud":
+            from app.models import WorkspaceMember
+            member_count = WorkspaceMember.query.filter(
+                WorkspaceMember.workspace_id == workspace_id, WorkspaceMember.is_deleted.is_(False)
+            ).count()
+        else:
+            member_count = 1
 
         archived_count = Entity.query.filter(
             Entity.workspace_id == workspace_id,

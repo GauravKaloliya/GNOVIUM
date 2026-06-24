@@ -1,5 +1,5 @@
 from app.extensions import db
-from app.repositories.domain import NotificationRepository
+from app.repositories import NotificationRepository
 
 
 class NotificationService:

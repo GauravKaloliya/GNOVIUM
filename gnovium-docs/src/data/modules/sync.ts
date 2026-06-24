@@ -9,6 +9,7 @@ export const syncEndpoints: Endpoint[] = [
     path: '/sync/',
     summary: 'List sync operations',
     description: 'Returns sync operations for a workspace. Set pending=true to return unsynced operations only.',
+    availability: 'cloud-only',
     headers: authHeader,
     parameters: [
       { ...workspaceParam, required: false },
@@ -24,6 +25,7 @@ export const syncEndpoints: Endpoint[] = [
     path: '/sync/',
     summary: 'Create sync operation',
     description: 'Ingests a client operation for cross-device synchronization. Used by the offline sync engine to queue changes made on other devices.',
+    availability: 'cloud-only',
     headers: authHeader,
     requestBody: j({
       workspace_id: workspaceId,
@@ -43,6 +45,7 @@ export const syncEndpoints: Endpoint[] = [
     path: '/sync/<id>',
     summary: 'Get sync operation',
     description: 'Retrieves a single sync operation by ID.',
+    availability: 'cloud-only',
     headers: authHeader,
     parameters: [pathParam('op_id', 'Sync operation ID')],
     response: itemEnvelope({ id: syncOpId, operation_type: 'entity_update' }),
@@ -54,6 +57,7 @@ export const syncEndpoints: Endpoint[] = [
     path: '/sync/<id>/ack',
     summary: 'Acknowledge sync operation',
     description: 'Marks a sync operation as applied. Used to confirm that an operation has been processed by the server.',
+    availability: 'cloud-only',
     headers: authHeader,
     parameters: [pathParam('op_id', 'Sync operation ID')],
     response: itemEnvelope({ id: syncOpId, synced_at: '2026-06-21T12:30:00Z' }),

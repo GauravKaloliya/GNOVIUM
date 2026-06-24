@@ -32,8 +32,9 @@ def create_app(config_object=None):
     limiter.init_app(app)
 
     try:
-        if app.config["REDIS_URL"].startswith("redis"):
-            extensions.redis_client = Redis.from_url(app.config["REDIS_URL"], decode_responses=True)
+        redis_url = app.config.get("REDIS_URL")
+        if redis_url and isinstance(redis_url, str) and redis_url.startswith("redis"):
+            extensions.redis_client = Redis.from_url(redis_url, decode_responses=True)
             extensions.redis_client.ping()
         else:
             extensions.redis_client = None
@@ -54,12 +55,68 @@ def create_app(config_object=None):
     cache.init_app(app)
 
     with app.app_context():
-        if app.config.get("AUTO_CREATE_TABLES", False) or app.config.get("TESTING"):
-            import sqlalchemy
+        db_url = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+        if db_url.startswith("sqlite") and (app.config.get("AUTO_CREATE_TABLES", False) or app.config.get("TESTING")):
             try:
                 db.create_all()
             except Exception as e:
                 app.logger.warning(f"Table creation skipped: {e}")
+        if app.config.get("GNOVIUM_MODE") != "cloud":
+            try:
+                from pathlib import Path
+                sql_path = Path(__file__).resolve().parent.parent / "SQLITE_SCHEMA.sql"
+                if sql_path.exists():
+                    sql = sql_path.read_text()
+
+                    def split_sql_statements(text):
+                        statements = []
+                        current = []
+                        depth = 0
+                        for line in text.split("\n"):
+                            stripped = line.strip()
+                            if stripped.upper().startswith("BEGIN"):
+                                depth += 1
+                            elif stripped.upper().startswith("END") and depth > 0:
+                                depth -= 1
+                                current.append(line)
+                                if depth == 0:
+                                    stmt = "\n".join(current).strip().rstrip(";")
+                                    if stmt:
+                                        statements.append(stmt)
+                                    current = []
+                                continue
+                            if depth > 0:
+                                current.append(line)
+                            else:
+                                if ";" in stripped:
+                                    parts = line.split(";")
+                                    for i, part in enumerate(parts):
+                                        if i < len(parts) - 1:
+                                            current.append(part)
+                                            stmt = "\n".join(current).strip()
+                                            if stmt:
+                                                statements.append(stmt)
+                                            current = []
+                                        else:
+                                            current.append(part)
+                                elif stripped:
+                                    current.append(line)
+                        remainder = "\n".join(current).strip().rstrip(";")
+                        if remainder:
+                            statements.append(remainder)
+                        return statements
+
+                    for statement in split_sql_statements(sql):
+                        stmt = statement.strip()
+                        if stmt and any(kw in stmt.upper() for kw in ("VIRTUAL TABLE", "TRIGGER", "INDEX", "INSERT", "PRAGMA", "CREATE UNIQUE INDEX", "CREATE INDEX")):
+                            try:
+                                db.session.execute(db.text(stmt))
+                            except Exception:
+                                pass
+                    db.session.commit()
+                    app.logger.info("SQLite FTS/trigger/index setup complete")
+            except Exception as e:
+                app.logger.warning(f"SQLite extras init skipped: {e}")
 
     register_error_handlers(app)
     register_routes(app)

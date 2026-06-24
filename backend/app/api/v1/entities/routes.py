@@ -2,7 +2,7 @@ from flask import Blueprint, request
 
 from app.api.v1.helpers import item_response, list_response, pagination_args, request_json
 from app.core.validation import load_schema
-from app.repositories.domain import BlockRepository, EntityRepository, EntityTypeRepository, PropertyRepository
+from app.repositories import BlockRepository, EntityRepository, EntityTypeRepository, PropertyRepository
 from app.schemas.domain import EntityCreateSchema, EntityTypeCreateSchema, EntityUpdateSchema, PropertyCreateSchema
 from app.services.entity_service import EntityService
 from app.services.security import current_user_id, secured
@@ -41,13 +41,13 @@ def update_entity(entity_id):
 @bp.delete("/<string:entity_id>")
 @secured
 def delete_entity(entity_id):
-    return item_response(EntityService().soft_delete(entity_id))
+    return item_response(EntityService().soft_delete(entity_id, current_user_id()))
 
 
 @bp.post("/<string:entity_id>/restore")
 @secured
 def restore_entity(entity_id):
-    return item_response(EntityService().restore(entity_id))
+    return item_response(EntityService().restore(entity_id, current_user_id()))
 
 
 @bp.post("/<string:entity_id>/archive")
@@ -88,7 +88,11 @@ def create_child(entity_id):
 @bp.get("/<string:entity_id>/versions")
 @secured
 def get_versions(entity_id):
-    from app.repositories.domain import EntityVersionRepository
+    from flask import current_app
+    if current_app.config.get("GNOVIUM_MODE") != "cloud":
+        from app.core.response import error
+        return error("Version history is not available in local mode", status=404)
+    from app.repositories import EntityVersionRepository
     args = pagination_args()
     return list_response(EntityVersionRepository().list({"entity_id": entity_id}, args["page"], args["per_page"]))
 

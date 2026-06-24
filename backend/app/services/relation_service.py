@@ -1,7 +1,7 @@
 from app.events.service import EventService
 from app.extensions import db
 from app.models import Relation
-from app.repositories.domain import EntityRepository, RelationRepository
+from app.repositories import EntityRepository, RelationRepository
 
 
 class RelationService:
@@ -28,9 +28,18 @@ class RelationService:
     def backlinks(self, entity_id):
         return RelationRepository().backlinks(entity_id)
 
-    def delete(self, relation_id):
+    def delete(self, relation_id, user_id=None):
         relation = RelationRepository().get(relation_id)
-        RelationRepository().soft_delete(relation)
+        RelationRepository().soft_delete(relation, deleted_by=user_id)
         EventService().entity_event(relation.source_entity_id, "relation.deleted", {"relation_id": str(relation.id)})
+        db.session.commit()
+        return relation
+
+    def restore(self, relation_id):
+        relation = RelationRepository().get(relation_id, include_deleted=True)
+        relation.is_deleted = False
+        relation.deleted_at = None
+        relation.deleted_by = None
+        EventService().entity_event(relation.source_entity_id, "relation.restored", {"relation_id": str(relation.id)})
         db.session.commit()
         return relation

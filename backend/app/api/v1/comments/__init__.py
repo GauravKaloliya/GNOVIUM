@@ -2,7 +2,7 @@ from flask import Blueprint, request
 
 from app.api.v1.helpers import item_response, list_response, pagination_args, request_json
 from app.core.validation import load_schema
-from app.repositories.domain import CommentRepository
+from app.repositories import CommentRepository
 from app.schemas.domain import CommentCreateSchema, CommentUpdateSchema
 from app.services.comment_service import CommentService
 from app.services.security import current_user_id, secured

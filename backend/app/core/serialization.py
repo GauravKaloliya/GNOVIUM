@@ -20,13 +20,15 @@ def to_json(value):
 
 
 def model_to_dict(model, exclude=None):
-    """Serialize a SQLAlchemy model instance to a plain dict.
+    """Serialize a SQLAlchemy model instance (or plain dict) to a plain dict.
 
     Uses the ORM mapper's column_attrs so the Python attribute name is always
     used — avoiding the 'metadata' key collision where a DB column named
     'metadata' would clash with SQLAlchemy's own MetaData object.
     """
     exclude = set(exclude or [])
+    if isinstance(model, dict):
+        return {k: to_json(v) for k, v in model.items() if k not in exclude}
     result = {}
     mapper = sa_inspect(type(model))
     for attr in mapper.column_attrs:

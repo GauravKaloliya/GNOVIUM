@@ -84,9 +84,17 @@ class BranchService:
         db.session.commit()
         return branch
 
-    def delete(self, branch_id):
+    def delete(self, branch_id, user_id=None):
         branch = BranchRepository().get(branch_id)
-        BranchRepository().soft_delete(branch)
+        BranchRepository().soft_delete(branch, deleted_by=user_id)
+        db.session.commit()
+        return branch
+
+    def restore(self, branch_id):
+        branch = BranchRepository().get(branch_id, include_deleted=True)
+        branch.is_deleted = False
+        branch.deleted_at = None
+        branch.deleted_by = None
         db.session.commit()
         return branch
 

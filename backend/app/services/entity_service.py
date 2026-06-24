@@ -1,22 +1,40 @@
 import hashlib
 import json
 
+from flask import current_app
+
+from datetime import datetime
+
 from app.events.service import EventService
 from app.extensions import db
-from app.models import Entity
-from app.repositories.domain import (
+from app.models import Block, Comment, Embedding, Entity, Notification
+from app.repositories import (
+    EntityFileRepository,
     EntityPropertyValueRepository,
     EntityRepository,
+    EntityTagRepository,
     EntityTypeRepository,
-    JobRepository,
     PropertyRepository,
     RelationRepository,
-    SearchRepository,
 )
+from app.services.search_service import SearchService
 
 
 def content_hash(payload):
     return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def _maybe_create_job(workspace_id, entity_id, user_id):
+    if current_app.config.get("GNOVIUM_MODE") == "cloud":
+        from app.repositories import JobRepository
+        JobRepository().create(
+            {
+                "workspace_id": workspace_id,
+                "job_type": "embedding.generate",
+                "payload": {"entity_id": str(entity_id)},
+                "created_by": user_id,
+            }
+        )
 
 
 class EntityService:
@@ -35,23 +53,8 @@ class EntityService:
         entity = EntityRepository().create({**data, "created_by": user_id})
         db.session.flush()
         self._upsert_properties(entity.id, properties)
-        SearchRepository().create(
-            {
-                "workspace_id": entity.workspace_id,
-                "entity_id": entity.id,
-                "title": entity.title,
-                "content": json.dumps(properties, default=str),
-                "content_hash": content_hash({"title": entity.title, "properties": properties}),
-            }
-        )
-        JobRepository().create(
-            {
-                "workspace_id": entity.workspace_id,
-                "job_type": "embedding.generate",
-                "payload": {"entity_id": str(entity.id)},
-                "created_by": user_id,
-            }
-        )
+        SearchService().rebuild_entity_index(entity.id)
+        _maybe_create_job(entity.workspace_id, entity.id, user_id)
         EventService().entity_event(entity.id, "entity.created", {"title": entity.title})
         db.session.commit()
         return entity
@@ -63,28 +66,121 @@ class EntityService:
         repo.update(entity, data)
         if properties is not None:
             self._upsert_properties(entity.id, properties)
+        SearchService().rebuild_entity_index(entity.id)
         EventService().entity_event(entity.id, "entity.updated", data)
-        JobRepository().create(
-            {
-                "workspace_id": entity.workspace_id,
-                "job_type": "embedding.generate",
-                "payload": {"entity_id": str(entity.id)},
-                "created_by": user_id,
-            }
-        )
+        _maybe_create_job(entity.workspace_id, entity.id, user_id)
         db.session.commit()
         return entity
 
-    def soft_delete(self, entity_id):
+    def soft_delete(self, entity_id, user_id=None):
         entity = EntityRepository().get(entity_id)
-        EntityRepository().soft_delete(entity)
+        now = datetime.utcnow()
+        EntityRepository().soft_delete(entity, deleted_by=user_id)
+
+        from app.models import Block, Comment, Embedding, Notification
+        from app.repositories import (
+            EntityFileRepository,
+            EntityPropertyValueRepository,
+            EntityTagRepository,
+        )
+
+        Block.query.filter(
+            Block.entity_id == str(entity_id),
+            Block.is_deleted.is_(False),
+        ).update({"is_deleted": True, "deleted_at": now, "deleted_by": str(user_id) if user_id else None})
+
+        EntityPropertyValueRepository().query().filter_by(entity_id=str(entity_id)).update(
+            {"is_deleted": True, "deleted_at": now, "deleted_by": str(user_id) if user_id else None}
+        )
+
+        for rel in RelationRepository().query().filter(
+            db.or_(
+                Relation.source_entity_id == str(entity_id),
+                Relation.target_entity_id == str(entity_id),
+            )
+        ).all():
+            RelationRepository().soft_delete(rel, deleted_by=user_id)
+
+        EntityTagRepository().query().filter_by(entity_id=str(entity_id)).update(
+            {"is_deleted": True, "deleted_at": now, "deleted_by": str(user_id) if user_id else None}
+        )
+
+        EntityFileRepository().query().filter_by(entity_id=str(entity_id)).update(
+            {"is_deleted": True, "deleted_at": now, "deleted_by": str(user_id) if user_id else None}
+        )
+
+        Comment.query.filter(
+            Comment.entity_id == str(entity_id),
+            Comment.is_deleted.is_(False),
+        ).update({"is_deleted": True, "deleted_at": now, "deleted_by": str(user_id) if user_id else None})
+
+        Embedding.query.filter(
+            Embedding.entity_id == str(entity_id),
+            Embedding.is_deleted.is_(False),
+        ).update({"is_deleted": True, "deleted_at": now, "deleted_by": str(user_id) if user_id else None})
+
+        Notification.query.filter(
+            Notification.entity_id == str(entity_id),
+            Notification.is_deleted.is_(False),
+        ).update({"is_deleted": True, "deleted_at": now, "deleted_by": str(user_id) if user_id else None})
+
+        SearchService().delete_entity_index(entity_id)
         EventService().entity_event(entity.id, "entity.deleted", {})
         db.session.commit()
         return entity
 
-    def restore(self, entity_id):
+    def restore(self, entity_id, user_id=None):
         entity = EntityRepository().get(entity_id, include_deleted=True)
         entity.is_deleted = False
+        entity.deleted_at = None
+        entity.deleted_by = None
+
+        from app.repositories import EntityFileRepository, EntityPropertyValueRepository, EntityTagRepository
+
+        Block.query.filter(
+            Block.entity_id == str(entity_id),
+            Block.is_deleted.is_(True),
+        ).update({"is_deleted": False, "deleted_at": None, "deleted_by": None})
+
+        EntityPropertyValueRepository().query().filter_by(entity_id=str(entity_id), is_deleted=True).update(
+            {"is_deleted": False, "deleted_at": None, "deleted_by": None}
+        )
+
+        for rel in RelationRepository().query(include_deleted=True).filter(
+            db.or_(
+                Relation.source_entity_id == str(entity_id),
+                Relation.target_entity_id == str(entity_id),
+            ),
+            Relation.is_deleted.is_(True),
+        ).all():
+            rel.is_deleted = False
+            rel.deleted_at = None
+            rel.deleted_by = None
+
+        EntityTagRepository().query(include_deleted=True).filter_by(entity_id=str(entity_id), is_deleted=True).update(
+            {"is_deleted": False, "deleted_at": None, "deleted_by": None}
+        )
+
+        EntityFileRepository().query(include_deleted=True).filter_by(entity_id=str(entity_id), is_deleted=True).update(
+            {"is_deleted": False, "deleted_at": None, "deleted_by": None}
+        )
+
+        Comment.query.filter(
+            Comment.entity_id == str(entity_id),
+            Comment.is_deleted.is_(True),
+        ).update({"is_deleted": False, "deleted_at": None, "deleted_by": None})
+
+        Embedding.query.filter(
+            Embedding.entity_id == str(entity_id),
+            Embedding.is_deleted.is_(True),
+        ).update({"is_deleted": False, "deleted_at": None, "deleted_by": None})
+
+        Notification.query.filter(
+            Notification.entity_id == str(entity_id),
+            Notification.is_deleted.is_(True),
+        ).update({"is_deleted": False, "deleted_at": None, "deleted_by": None})
+
+        SearchService().rebuild_entity_index(entity_id)
         EventService().entity_event(entity.id, "entity.restored", {})
         db.session.commit()
         return entity

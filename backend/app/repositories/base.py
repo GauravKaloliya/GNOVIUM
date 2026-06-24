@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import inspect
 
 from app.core.errors import NotFoundError
@@ -38,7 +40,9 @@ class BaseRepository:
 
     def create(self, data):
         allowed = self.columns()
-        item = self.model(**{key: value for key, value in data.items() if key in allowed})
+        sanitized = {key: value for key, value in data.items() if key in allowed}
+        sanitized.pop("is_deleted", None)
+        item = self.model(**sanitized)
         db.session.add(item)
         return item
 
@@ -49,9 +53,12 @@ class BaseRepository:
                 setattr(item, key, value)
         return item
 
-    def soft_delete(self, item):
+    def soft_delete(self, item, deleted_by=None):
         if hasattr(item, "is_deleted"):
             item.is_deleted = True
+            item.deleted_at = datetime.utcnow()
+            if deleted_by is not None and hasattr(item, "deleted_by"):
+                item.deleted_by = str(deleted_by)
         else:
             db.session.delete(item)
         return item

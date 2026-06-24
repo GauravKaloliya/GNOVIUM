@@ -12,7 +12,7 @@ export const relationEndpoints: Endpoint[] = [
     headers: authHeader,
     parameters: [{ ...workspaceParam, required: false }, ...paginationParams],
     response: listEnvelope([
-      { id: relationId, workspace_id: workspaceId, source_entity_id: entityId, target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'references' },
+      { id: relationId, workspace_id: workspaceId, source_entity_id: entityId, target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'refers_to' },
     ]),
   },
   {
@@ -27,10 +27,10 @@ export const relationEndpoints: Endpoint[] = [
       workspace_id: workspaceId,
       source_entity_id: entityId,
       target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b',
-      relation_type: 'references',
+      relation_type: 'refers_to',
       metadata: { confidence: 0.95 },
     }),
-    response: itemEnvelope({ id: relationId, relation_type: 'references' }),
+    response: itemEnvelope({ id: relationId, workspace_id: workspaceId, source_entity_id: entityId, target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'refers_to', relation_metadata: {}, created_by: null, created_at: '2026-06-21T08:30:00Z' }),
   },
   {
     id: 'relations-get',
@@ -41,7 +41,7 @@ export const relationEndpoints: Endpoint[] = [
     description: 'Retrieves a single relation by ID.',
     headers: authHeader,
     parameters: [pathParam('relation_id', 'Relation ID')],
-    response: itemEnvelope({ id: relationId, relation_type: 'references' }),
+    response: itemEnvelope({ id: relationId, relation_type: 'refers_to' }),
   },
   {
     id: 'relations-delete',
@@ -49,7 +49,7 @@ export const relationEndpoints: Endpoint[] = [
     method: 'DELETE',
     path: '/relations/<id>',
     summary: 'Delete relation',
-    description: 'Soft-deletes a relation edge. The entities remain unaffected.',
+    description: 'Deletes a relation permanently. The entities remain unaffected.',
     headers: authHeader,
     parameters: [pathParam('relation_id', 'Relation ID')],
     response: itemEnvelope({ id: relationId, deleted_at: '2026-06-21T12:30:00Z' }),
@@ -65,7 +65,7 @@ export const relationEndpoints: Endpoint[] = [
     parameters: [pathParam('entity_id', 'Entity ID')],
     response: j({
       data: [
-        { id: relationId, source_entity_id: entityId, target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'references' },
+        { id: relationId, source_entity_id: entityId, target_entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'refers_to' },
       ],
     }),
   },
@@ -96,7 +96,7 @@ export const relationEndpoints: Endpoint[] = [
     response: j({
       data: {
         entity_id: entityId,
-        neighbors: [{ entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'references' }],
+        neighbors: [{ entity_id: '2cf8e8f8-b3d2-430c-883a-d68a2bf6cb8b', relation_type: 'refers_to' }],
       },
     }),
   },

@@ -14,6 +14,9 @@ export default function ParticleGraph({ className = '' }: { className?: string }
   const { theme } = useTheme();
 
   useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');

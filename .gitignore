@@ -2,9 +2,25 @@
 .env.production
 .env.local
 .venv/
+venv/
 __pycache__/
 *.pyc
 .pytest_cache/
 .DS_Store
 rootkey.csv
 .vercel
+.aider*
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Electron
+electron/dist/
+electron/out/
+electron/build/
+
+# Python local DB
+backend/local.db
+.claude/
+

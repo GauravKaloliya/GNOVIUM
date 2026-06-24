@@ -24,7 +24,7 @@ function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'dark';
   const stored = localStorage.getItem('gnovium-theme') as Theme | null;
   if ((stored as string) && THEMES.includes(stored as Theme)) return stored as Theme;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'dark';
 }
 
 export default function ThemeProvider({ children }: { children: ReactNode }) {

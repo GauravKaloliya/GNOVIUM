@@ -9,6 +9,6 @@ export const systemEndpoints: Endpoint[] = [
     path: '/health',
     summary: 'Check API health',
     description: 'Public liveness endpoint for load balancers, uptime checks, and deployment smoke tests. Requires no authentication.',
-    response: itemEnvelope({ status: 'healthy', service: 'gnovium-api' }),
+    response: itemEnvelope({ status: 'healthy' }),
   },
 ];

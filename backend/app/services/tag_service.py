@@ -1,5 +1,5 @@
 from app.extensions import db
-from app.repositories.domain import EntityTagRepository, TagRepository
+from app.repositories import EntityTagRepository, TagRepository
 
 
 class TagService:
@@ -15,9 +15,17 @@ class TagService:
         db.session.commit()
         return tag
 
-    def delete(self, tag_id):
+    def delete(self, tag_id, user_id=None):
         tag = TagRepository().get(tag_id)
-        TagRepository().soft_delete(tag)
+        TagRepository().soft_delete(tag, deleted_by=user_id)
+        db.session.commit()
+        return tag
+
+    def restore(self, tag_id):
+        tag = TagRepository().get(tag_id, include_deleted=True)
+        tag.is_deleted = False
+        tag.deleted_at = None
+        tag.deleted_by = None
         db.session.commit()
         return tag
 

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { Search, Command, Sun, Moon, Star, ExternalLink, Play } from 'lucide-react';
+import { Search, Command, Sun, Moon, Star, ExternalLink, Download } from 'lucide-react';
 import SearchPalette from '@/components/SearchPalette';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -59,22 +59,22 @@ export default function Navigation() {
                   />
                 </div>
                 <span className="text-sm font-black tracking-widest text-[var(--foreground)] transition-colors group-hover:opacity-70 uppercase font-mono">
-                  GNOVIUM <span className="text-[9px] font-black px-2 py-0.5 rounded-none bg-[var(--foreground)] text-[var(--background)] border-2 border-[var(--foreground)] ml-1 tracking-normal font-sans">DOCS</span>
+                  GNOVIUM <span className="text-[10px] font-black px-2 py-0.5 rounded-none bg-[var(--foreground)] text-[var(--background)] border-2 border-[var(--foreground)] ml-1 tracking-normal font-sans">DOCS</span>
                 </span>
               </Link>
             </div>
 
             {/* Center - Creator Credit */}
             <div className="hidden md:flex items-center gap-4">
-              <div className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[var(--foreground)] flex items-center gap-2">
-                <span className="opacity-60">CREATED BY</span>
+              <div className="font-mono text-[11px] font-black uppercase tracking-[0.2em] text-[var(--foreground)] flex items-center gap-2">
+                <span className="opacity-60">Created by</span>
                 <a
                   href="https://www.linkedin.com/in/gaurav-kaloliya-b44569417"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:opacity-80 transition-opacity border-b-2 border-[var(--foreground)] pb-px font-bold"
                 >
-                  GAURAV KALOLIYA
+                  Gaurav Kaloliya
                 </a>
               </div>
             </div>
@@ -82,7 +82,7 @@ export default function Navigation() {
             {/* Center-right - Status + Progress */}
             <div className="hidden xl:flex items-center gap-4 ml-4">
               {/* API Status */}
-              <div className="flex items-center gap-1.5 text-[9px] font-mono font-black uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 text-[10px] font-mono font-black uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 bg-emerald-400 animate-pulse" />
                 <span className="text-emerald-400">API</span>
                 <span className="text-[var(--muted)]">Healthy</span>
@@ -99,23 +99,21 @@ export default function Navigation() {
                 href="https://github.com/GauravKaloliya/gnovium"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-[var(--border)] text-[10px] font-black font-mono uppercase tracking-wider text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-all bg-[var(--card-bg)]"
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-[var(--border)] text-[11px] font-black font-mono uppercase tracking-wider text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-all bg-[var(--card-bg)]"
               >
                 <Star className="h-3 w-3 fill-current" />
                 <span>Star</span>
                 <ExternalLink className="h-2.5 w-2.5 opacity-60" />
               </a>
 
-              {/* Live Demo */}
-              <a
-                href="https://github.com/GauravKaloliya/gnovium"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 border-2 border-[var(--foreground)] text-[10px] font-black font-mono uppercase tracking-wider bg-[var(--foreground)] text-[var(--background)] hover:opacity-80 transition-all neo-depth-btn"
+              {/* Download */}
+              <Link
+                href="/download"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 border-2 border-[var(--foreground)] text-[11px] font-black font-mono uppercase tracking-wider bg-[var(--foreground)] text-[var(--background)] hover:opacity-80 transition-all neo-depth-btn"
               >
-                <Play className="h-2.5 w-2.5 fill-current" />
-                Live Demo
-              </a>
+                <Download className="h-3 w-3 stroke-[2.5]" />
+                Download
+              </Link>
 
               {/* Theme Toggle */}
               {mounted && (
@@ -141,19 +139,28 @@ export default function Navigation() {
                 </button>
               )}
 
+              {/* Mobile search icon */}
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="md:hidden p-2.5 rounded-none border-2 border-[var(--border)] neo-depth-btn text-[var(--foreground)] cursor-pointer"
+                aria-label="Search endpoints"
+              >
+                <Search className="h-4 w-4" strokeWidth={2.5} />
+              </button>
+
               {/* Search Button */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="flex items-center justify-between w-56 lg:w-72 rounded-none bg-[var(--card-bg)] border-2 border-[var(--border)] px-3 py-2.5 text-xs text-[var(--foreground)] font-bold transition-all neo-depth-btn cursor-pointer"
+                className="hidden md:flex items-center justify-between w-64 lg:w-80 rounded-none bg-[var(--card-bg)] border-2 border-[var(--border)] px-3 py-2.5 text-xs text-[var(--foreground)] font-bold transition-all neo-depth-btn cursor-pointer"
                 aria-label="Search endpoints"
               >
                 <div className="flex items-center gap-2">
                   <Search className="h-3.5 w-3.5 stroke-[2.5] text-[var(--muted)]" />
-                  <span className="font-mono uppercase tracking-wider text-[var(--muted)] text-[10px]">
-                    Search endpoints...
+                  <span className="font-mono text-[var(--muted)] text-[11px]">
+                    Search everything...
                   </span>
                 </div>
-                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded-none border border-[var(--border)] bg-[var(--card-bg)] px-1.5 font-mono text-[9px] font-medium text-[var(--muted)]">
+                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded-none border border-[var(--border)] bg-[var(--card-bg)] px-1.5 font-mono text-[10px] font-medium text-[var(--muted)]">
                   <Command className="h-2.5 w-2.5" />K
                 </kbd>
               </button>
@@ -191,7 +198,7 @@ function DocsProgress() {
   const pct = Math.round((count / TOTAL) * 100);
 
   return (
-    <div className="flex items-center gap-2 text-[9px] font-mono font-bold text-[var(--muted)]">
+    <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-[var(--muted)]">
       <span>{count}/{TOTAL}</span>
       <div className="w-14 h-1.5 bg-[var(--border)] overflow-hidden">
         <div className="h-full bg-[var(--foreground)] transition-all duration-500 ease-out" style={{ width: `${pct}%` }} />

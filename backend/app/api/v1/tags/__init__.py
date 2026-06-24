@@ -2,9 +2,9 @@ from flask import Blueprint, request
 
 from app.api.v1.helpers import item_response, list_response, pagination_args, raw_response, request_json
 from app.core.validation import load_schema
-from app.repositories.domain import TagRepository
+from app.repositories import TagRepository
 from app.schemas.domain import TagCreateSchema, TagUpdateSchema
-from app.services.security import secured
+from app.services.security import current_user_id, secured
 from app.services.tag_service import TagService
 
 bp = Blueprint("tags", __name__)
@@ -38,7 +38,7 @@ def update_tag(tag_id):
 @bp.delete("/<string:tag_id>")
 @secured
 def delete_tag(tag_id):
-    return item_response(TagService().delete(tag_id))
+    return item_response(TagService().delete(tag_id, current_user_id()))
 
 
 @bp.post("/<string:tag_id>/entities/<string:entity_id>")

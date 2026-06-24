@@ -2,7 +2,7 @@ from flask import Blueprint
 
 from app.api.v1.helpers import item_response, list_response, pagination_args, request_json
 from app.core.validation import load_schema
-from app.repositories.domain import WorkspaceRepository
+from app.repositories import WorkspaceRepository
 from app.schemas.domain import WorkspaceCreateSchema, WorkspaceUpdateSchema
 from app.services.security import current_user_id, secured
 from app.services.workspace_service import WorkspaceService
@@ -40,7 +40,7 @@ def update_workspace(workspace_id):
 @bp.delete("/<string:workspace_id>")
 @secured
 def delete_workspace(workspace_id):
-    return item_response(WorkspaceService().delete(workspace_id))
+    return item_response(WorkspaceService().delete(workspace_id, current_user_id()))
 
 
 @bp.get("/<string:workspace_id>/stats")

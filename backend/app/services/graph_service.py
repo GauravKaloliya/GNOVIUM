@@ -4,7 +4,7 @@ from collections import deque
 from datetime import datetime
 
 from app.extensions import db
-from app.repositories.domain import GraphMaterializationRepository, RelationRepository, EntityRepository
+from app.repositories import GraphMaterializationRepository, RelationRepository, EntityRepository
 
 
 class GraphService:
@@ -46,14 +46,14 @@ class GraphService:
         """
         entity_q = EntityRepository().query().filter_by(workspace_id=workspace_id)
         if entity_type_ids:
-            from app.models.domain import Entity
+            from app.models import Entity
             entity_q = entity_q.filter(Entity.entity_type_id.in_(entity_type_ids))
         entities = entity_q.limit(limit).all()
         entity_ids = {str(e.id) for e in entities}
 
         relation_q = RelationRepository().query().filter_by(workspace_id=workspace_id)
         if relation_types:
-            from app.models.domain import Relation
+            from app.models import Relation
             relation_q = relation_q.filter(Relation.relation_type.in_(relation_types))
         relations = relation_q.all()
         # Only keep edges where both endpoints are in the node set
@@ -133,7 +133,7 @@ class GraphService:
                     queue.append((neighbor_id, current_depth + 1))
 
         # Fetch entity details for all visited nodes
-        from app.models.domain import Entity
+        from app.models import Entity
         entity_ids = list(visited_nodes)
         entities = EntityRepository().query().filter(Entity.id.in_(entity_ids)).all()
         entity_map = {str(e.id): e for e in entities}

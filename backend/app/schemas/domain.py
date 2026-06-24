@@ -136,7 +136,6 @@ class FileCreateSchema(Schema):
     file_size = fields.Int(load_default=None, allow_none=True)
     object_key = fields.Str(required=True)
     public_url = fields.Str(load_default=None)
-    storage_provider = fields.Str(load_default="aws_s3")
 
 
 class NotificationCreateSchema(Schema):

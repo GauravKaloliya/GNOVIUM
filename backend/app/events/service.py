@@ -1,5 +1,5 @@
 from app.extensions import db
-from app.repositories.domain import ActivityLogRepository, EntityEventRepository
+from app.repositories import ActivityLogRepository, EntityEventRepository
 
 
 class EventService:

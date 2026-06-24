@@ -2,7 +2,7 @@ import { Star, ExternalLink } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="mt-20 border-t-[3px] border-[var(--foreground)] bg-[var(--card-bg)]">
+    <footer className="mt-8 md:mt-12 border-t-[3px] border-[var(--foreground)] bg-[var(--card-bg)] hidden lg:block">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between py-6 gap-4">
           {/* Left - Copyright */}

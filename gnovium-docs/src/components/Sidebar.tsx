@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Shield, Gauge, GitBranch, AlertTriangle, Globe, PanelLeftClose } from 'lucide-react';
 import { Endpoint } from '@/data';
 import { getModuleIcon } from '@/data/icons';
@@ -12,10 +12,10 @@ interface NavItem {
 }
 
 const GUIDE_ITEMS: NavItem[] = [
-  { id: 'auth-guide', label: 'Authentication Guide', icon: <Shield className="h-3 w-3" /> },
-  { id: 'rate-limits', label: 'Rate Limits & Backoff', icon: <Gauge className="h-3 w-3" /> },
-  { id: 'cors-config', label: 'CORS Configuration', icon: <Globe className="h-3 w-3" /> },
-  { id: 'api-versioning', label: 'API Versioning & Migration', icon: <GitBranch className="h-3 w-3" /> },
+  { id: 'auth-guide', label: 'Authentication Guide', icon: <Shield className="h-3.5 w-3.5" /> },
+  { id: 'rate-limits', label: 'Rate Limits & Backoff', icon: <Gauge className="h-3.5 w-3.5" /> },
+  { id: 'cors-config', label: 'CORS Configuration', icon: <Globe className="h-3.5 w-3.5" /> },
+  { id: 'api-versioning', label: 'API Versioning & Migration', icon: <GitBranch className="h-3.5 w-3.5" /> },
 ];
 
 interface SidebarProps {
@@ -31,6 +31,15 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ endpoints, activeId, onSelect, activeGuideId, onGuideSelect, filterMethod, viewedEndpoints, zenMode, onToggleZenMode }: SidebarProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [savedScrollPos, setSavedScrollPos] = useState(0);
+
+  useEffect(() => {
+    if (scrollRef.current && savedScrollPos > 0) {
+      scrollRef.current.scrollTop = savedScrollPos;
+    }
+  }, [endpoints]);
+
   const filtered = filterMethod
     ? endpoints.filter((ep) => ep.method === filterMethod)
     : endpoints;
@@ -44,21 +53,24 @@ export default function Sidebar({ endpoints, activeId, onSelect, activeGuideId, 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const toggleModule = (name: string) => {
+    if (scrollRef.current) {
+      setSavedScrollPos(scrollRef.current.scrollTop);
+    }
     setCollapsed((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
   const methodBadge = (method: string) => {
     const cls = method === 'GET' ? 'method-get' : method === 'POST' ? 'method-post' : method === 'PATCH' ? 'method-patch' : 'method-delete';
-    return `text-[9px] font-black px-1.5 py-0.5 border-2 ${cls} rounded-none w-10 text-center`;
+    return `text-[10px] font-black px-1.5 py-0.5 border-2 ${cls} rounded-none w-10 text-center`;
   };
 
   const totalCount = endpoints.length;
   const exploredCount = viewedEndpoints.size;
 
   return (
-    <aside className="w-full h-full flex flex-col gap-6 select-none font-mono overflow-y-auto" role="region" aria-label="Documentation navigation">
+    <aside ref={scrollRef} className="w-full h-full flex flex-col gap-6 select-none font-mono overflow-y-auto" role="region" aria-label="Documentation navigation">
       {/* Toggle sidebar button */}
-      <div className="flex items-center justify-end px-3 pt-1">
+      <div className="hidden lg:flex items-center justify-end px-3 pt-1">
         <button
           onClick={onToggleZenMode}
           className="p-1.5 border-2 border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-all cursor-pointer neo-depth-btn"
@@ -71,9 +83,9 @@ export default function Sidebar({ endpoints, activeId, onSelect, activeGuideId, 
 
       {/* Progress indicator */}
       <div className="px-3">
-        <div className="flex items-center justify-between text-[10px] font-bold font-mono text-[var(--muted)] mb-1.5">
-          <span>EXPLORED</span>
-          <span>{exploredCount}/{totalCount} endpoints</span>
+        <div className="flex items-center justify-between text-[11px] font-bold font-mono text-[var(--muted)] mb-1.5">
+          <span>Explored</span>
+          <span>{exploredCount}/{totalCount}</span>
         </div>
         <div className="w-full h-1.5 bg-[var(--border)] relative overflow-hidden">
           <div
@@ -98,7 +110,7 @@ export default function Sidebar({ endpoints, activeId, onSelect, activeGuideId, 
           }`}
           aria-label="Jump to MVP Quickstart guide"
         >
-          <span className="text-[9px] font-black px-1.5 py-0.5 border-2 border-[var(--border)] rounded-none w-10 text-center">⚡</span>
+          <span className="text-[10px] font-black px-1.5 py-0.5 border-2 border-[var(--border)] rounded-none w-10 text-center">⚡</span>
           <span>MVP Quickstart</span>
         </button>
       </div>
@@ -113,7 +125,7 @@ export default function Sidebar({ endpoints, activeId, onSelect, activeGuideId, 
               <button
                 key={item.id}
                 onClick={() => onGuideSelect(item.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-none text-left text-xs transition-all cursor-pointer ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-none text-left text-xs transition-all cursor-pointer card-hover ${
                   isActive
                     ? 'bg-[var(--card-bg)] border-l-3 border-[var(--sidebar-active)] text-[var(--foreground)] font-bold'
                     : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-bg)] border-l-3 border-transparent'
@@ -133,16 +145,16 @@ export default function Sidebar({ endpoints, activeId, onSelect, activeGuideId, 
         <div className="space-y-0.5">
           <a
             href="/error-catalog"
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-none text-left text-xs transition-all cursor-pointer text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-bg)] border-l-3 border-transparent"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-none text-left text-xs transition-all cursor-pointer text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-bg)] border-l-3 border-transparent card-hover"
           >
-            <AlertTriangle className="h-3 w-3" />
+            <AlertTriangle className="h-3.5 w-3.5" />
             <span>Error Catalog</span>
           </a>
           <a
             href="/changelog"
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-none text-left text-xs transition-all cursor-pointer text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-bg)] border-l-3 border-transparent"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-none text-left text-xs transition-all cursor-pointer text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-bg)] border-l-3 border-transparent card-hover"
           >
-            <GitBranch className="h-3 w-3" />
+            <GitBranch className="h-3.5 w-3.5" />
             <span>Changelog</span>
           </a>
         </div>
@@ -158,15 +170,15 @@ export default function Sidebar({ endpoints, activeId, onSelect, activeGuideId, 
               <div key={moduleName} className="space-y-1">
                 <button
                   onClick={() => toggleModule(moduleName)}
-                  className="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs font-black text-[var(--muted)] uppercase tracking-wider cursor-pointer hover:text-[var(--foreground)] transition-colors"
+                  className="w-full flex items-center gap-1.5 px-3 py-2 text-xs font-black text-[var(--muted)] uppercase tracking-wider cursor-pointer hover:text-[var(--foreground)] transition-colors bg-[var(--sunken-bg)] border-b border-[var(--border)]"
                   aria-expanded={!isCollapsed}
                   aria-label={`${moduleName} module with ${moduleEndpoints.length} endpoints`}
                 >
                   {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                   {getModuleIcon(moduleName)}
                   {moduleName}
-                  <span className="text-[9px] ml-auto opacity-50 flex items-center gap-1">
-                    <span className={seenCount === moduleEndpoints.length ? 'text-emerald-400' : ''}>{seenCount}</span>/{moduleEndpoints.length}
+                  <span className="text-[10px] ml-auto opacity-50 flex items-center gap-1 font-normal normal-case">
+                    <span className={seenCount === moduleEndpoints.length ? 'text-emerald-400 font-black' : ''}>{seenCount}</span>/{moduleEndpoints.length}
                   </span>
                 </button>
                 {!isCollapsed && (
@@ -178,7 +190,7 @@ export default function Sidebar({ endpoints, activeId, onSelect, activeGuideId, 
                         <button
                           key={ep.id}
                           onClick={() => onSelect(ep.id)}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-none text-left text-xs transition-all cursor-pointer ${
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-none text-left text-xs transition-all cursor-pointer card-hover ${
                             isActive
                               ? 'bg-[var(--card-bg)] border-l-3 border-[var(--sidebar-active)] text-[var(--foreground)] font-bold'
                               : 'text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-bg)] border-l-3 border-transparent'

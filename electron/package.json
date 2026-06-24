@@ -1,0 +1,29 @@
+{
+  "name": "gnovium-electron",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Gnovium Electron shell — wraps Flask API + product UI",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "npm run build && tsc --watch & chokidar 'renderer/**' --no-initial -c 'cp -r renderer dist/renderer' & sleep 1 && electron .",
+    "start": "electron .",
+    "build": "tsc -p tsconfig.json && npm run copy-assets",
+    "copy-assets": "rm -rf dist/renderer && mkdir -p dist && cp -r renderer dist/renderer && cp -r src/logo dist/renderer/logo",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:preload": "tsc -p tsconfig.preload.json",
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
+    "package": "npm run build && electron-builder",
+    "clean": "rm -rf dist out"
+  },
+  "dependencies": {
+    "tree-kill": "^1.2.2"
+  },
+  "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "electron": "^34.0.0",
+    "electron-builder": "^26.0.0",
+    "electron-devtools-installer": "^3.2.0",
+    "sharp": "^0.35.2",
+    "typescript": "^5.7.0"
+  }
+}

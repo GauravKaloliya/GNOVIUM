@@ -1,1 +1,67 @@
+import os
 
+_mode = os.environ.get("GNOVIUM_MODE", "local").strip().lower()
+
+if _mode == "cloud":
+    from app.repositories.domain import (
+        ActivityLogRepository,
+        BlockRepository,
+        BlockVersionRepository,
+        BranchMergeRepository,
+        BranchRepository,
+        ChangesetRepository,
+        CommentRepository,
+        EmbeddingRepository,
+        EntityBranchHeadRepository,
+        EntityEventRepository,
+        EntityFileRepository,
+        EntityPropertyValueRepository,
+        EntityRepository,
+        EntityTagRepository,
+        EntityTypeRepository,
+        EntityVersionRepository,
+        FileRepository,
+        GovernanceReportRepository,
+        GraphMaterializationRepository,
+        JobRepository,
+        NotificationRepository,
+        PropertyRepository,
+        RelationRepository,
+        SearchRepository,
+        SessionRepository,
+        SnapshotRepository,
+        SyncOperationRepository,
+        TagRepository,
+        UserRepository,
+        WorkspaceMemberRepository,
+        WorkspaceRepository,
+    )
+else:
+    from app.repositories.domain import (
+        BranchMergeRepository,
+        BranchRepository,
+        CommentRepository,
+        EmbeddingRepository,
+        EntityBranchHeadRepository,
+        EntityEventRepository,
+        EntityFileRepository,
+        EntityPropertyValueRepository,
+        EntityRepository,
+        EntityTagRepository,
+        EntityTypeRepository,
+        FileRepository,
+        GovernanceReportRepository,
+        GraphMaterializationRepository,
+        NotificationRepository,
+        PropertyRepository,
+        RelationRepository,
+        SnapshotRepository,
+        TagRepository,
+        WorkspaceRepository,
+    )
+    from app.repositories.local import (
+        ActivityLogRepository,
+        BlockRepository,
+        FileRepository,
+        SearchRepository,
+    )

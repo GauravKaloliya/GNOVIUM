@@ -16,6 +16,7 @@ export interface Endpoint {
   parameters?: Parameter[];
   requestBody?: string;
   response: string;
+  availability?: 'cloud-only';
 }
 
 export interface ErrorCode {

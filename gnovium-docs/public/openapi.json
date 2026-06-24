@@ -80,7 +80,7 @@
           "Auth"
         ],
         "summary": "Register a user",
-        "description": "Creates a user account. Passwords must be at least 8 characters.",
+        "description": "Cloud-only. Creates a user account. Passwords must be at least 8 characters.",
         "operationId": "authRegister",
         "parameters": [],
         "requestBody": {
@@ -138,7 +138,7 @@
           "Auth"
         ],
         "summary": "Log in",
-        "description": "Authenticates with email and password.",
+        "description": "Cloud-only. Authenticates with email and password.",
         "operationId": "authLogin",
         "parameters": [],
         "requestBody": {
@@ -190,13 +190,101 @@
         ]
       }
     },
+    "/auth/check-email": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Check email availability",
+        "description": "Cloud-only. Checks whether an email address is already registered. Public endpoint.",
+        "operationId": "authCheckEmail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/google": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Sign in with Google",
+        "description": "Cloud-only. Authenticates using a Google OAuth credential token.",
+        "operationId": "authGoogle",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
     "/auth/refresh": {
       "post": {
         "tags": [
           "Auth"
         ],
         "summary": "Refresh access token",
-        "description": "Uses a valid refresh token to issue a new access token.",
+        "description": "Cloud-only. Uses a valid refresh token to issue a new access token. Only a new access_token is returned — the existing refresh token is reused.",
         "operationId": "authRefresh",
         "parameters": [],
         "responses": {
@@ -244,7 +332,7 @@
           "Auth"
         ],
         "summary": "Log out",
-        "description": "Revokes the current refresh-token session.",
+        "description": "Cloud-only. Revokes the current refresh-token session so it cannot be used again.",
         "operationId": "authLogout",
         "parameters": [],
         "responses": {
@@ -292,7 +380,7 @@
           "Auth"
         ],
         "summary": "Get current user",
-        "description": "Returns the authenticated user's profile.",
+        "description": "Cloud-only. Returns the authenticated user's profile.",
         "operationId": "authMe",
         "parameters": [],
         "responses": {
@@ -338,7 +426,7 @@
           "Auth"
         ],
         "summary": "Update current user",
-        "description": "Partially updates the authenticated user's profile.",
+        "description": "Cloud-only. Partially updates the authenticated user's profile.",
         "operationId": "authMeUpdate",
         "parameters": [],
         "requestBody": {
@@ -628,7 +716,7 @@
           "Workspaces"
         ],
         "summary": "Delete workspace",
-        "description": "Soft-deletes a workspace.",
+        "description": "Deletes a workspace permanently.",
         "operationId": "workspacesDelete",
         "parameters": [
           {
@@ -991,7 +1079,7 @@
           "Entities"
         ],
         "summary": "Delete entity",
-        "description": "Soft-deletes an entity. Can be restored.",
+        "description": "Deletes an entity permanently. Can be restored via POST /entities/{id}/restore.",
         "operationId": "entitiesDelete",
         "parameters": [
           {
@@ -1107,7 +1195,7 @@
           "Entities"
         ],
         "summary": "Restore entity",
-        "description": "Restores a soft-deleted or archived entity.",
+        "description": "Restores a deleted or archived entity.",
         "operationId": "entitiesRestore",
         "parameters": [
           {
@@ -1337,7 +1425,7 @@
           "Entities"
         ],
         "summary": "List entity versions",
-        "description": "Returns version history for an entity.",
+        "description": "Cloud-only. Returns version history for an entity. Returns 404 in local mode.",
         "operationId": "entitiesVersions",
         "parameters": [
           {
@@ -1789,7 +1877,7 @@
           "Blocks"
         ],
         "summary": "Delete block",
-        "description": "Soft-deletes a block.",
+        "description": "Deletes a block permanently.",
         "operationId": "blocksDelete",
         "parameters": [
           {
@@ -2557,7 +2645,7 @@
           "Relations"
         ],
         "summary": "Delete relation",
-        "description": "Soft-deletes a relation edge.",
+        "description": "Deletes a relation permanently.",
         "operationId": "relationsDelete",
         "parameters": [
           {
@@ -3043,7 +3131,7 @@
           "Comments"
         ],
         "summary": "Delete comment",
-        "description": "Soft-deletes a comment.",
+        "description": "Deletes a comment permanently.",
         "operationId": "commentsDelete",
         "parameters": [
           {
@@ -3415,7 +3503,7 @@
           "Versions"
         ],
         "summary": "List changesets",
-        "description": "Returns changesets for a branch.",
+        "description": "Cloud-only. Returns changesets for a branch.",
         "operationId": "versionsChangesetsList",
         "parameters": [],
         "responses": {
@@ -3461,7 +3549,7 @@
           "Versions"
         ],
         "summary": "Create changeset",
-        "description": "Creates a changeset.",
+        "description": "Cloud-only. Creates a changeset.",
         "operationId": "versionsChangesetsCreate",
         "parameters": [],
         "responses": {
@@ -3509,7 +3597,7 @@
           "Versions"
         ],
         "summary": "List snapshots",
-        "description": "Returns named snapshots.",
+        "description": "Cloud-only. Returns named snapshots.",
         "operationId": "versionsSnapshotsList",
         "parameters": [],
         "responses": {
@@ -3555,7 +3643,7 @@
           "Versions"
         ],
         "summary": "Create snapshot",
-        "description": "Creates a named snapshot.",
+        "description": "Cloud-only. Creates a named snapshot.",
         "operationId": "versionsSnapshotsCreate",
         "parameters": [],
         "responses": {
@@ -3603,7 +3691,7 @@
           "Versions"
         ],
         "summary": "Snapshot entity",
-        "description": "Captures current entity state.",
+        "description": "Cloud-only. Captures current entity state.",
         "operationId": "versionsEntitySnapshot",
         "parameters": [
           {
@@ -3661,7 +3749,7 @@
           "Versions"
         ],
         "summary": "List entity versions",
-        "description": "Returns version history.",
+        "description": "Cloud-only. Returns version history.",
         "operationId": "versionsEntitiesList",
         "parameters": [
           {
@@ -3719,7 +3807,7 @@
           "Versions"
         ],
         "summary": "List block versions",
-        "description": "Returns block version history.",
+        "description": "Cloud-only. Returns block version history.",
         "operationId": "versionsBlocksList",
         "parameters": [
           {
@@ -3777,7 +3865,7 @@
           "Versions"
         ],
         "summary": "Compare versions",
-        "description": "Field-level diff between versions.",
+        "description": "Cloud-only. Field-level diff between versions.",
         "operationId": "versionsCompare",
         "parameters": [],
         "responses": {
@@ -3825,7 +3913,7 @@
           "Versions"
         ],
         "summary": "Restore version",
-        "description": "Restores entity to a saved version.",
+        "description": "Cloud-only. Restores entity to a saved version.",
         "operationId": "versionsRestore",
         "parameters": [
           {
@@ -3883,7 +3971,7 @@
           "Diffs"
         ],
         "summary": "Compare snapshots",
-        "description": "Structured diff between snapshots or branches.",
+        "description": "Cloud-only. Structured diff between snapshots or branches.",
         "operationId": "diffsCompare",
         "parameters": [],
         "responses": {
@@ -4225,7 +4313,7 @@
           "Files"
         ],
         "summary": "Delete file",
-        "description": "Soft-deletes file metadata.",
+        "description": "Deletes a file permanently.",
         "operationId": "filesDelete",
         "parameters": [
           {
@@ -4282,9 +4370,115 @@
         "tags": [
           "Files"
         ],
-        "summary": "Presigned URL",
-        "description": "Returns S3 presigned upload URL.",
+        "summary": "Presigned URL (cloud-only)",
+        "description": "Returns an S3 presigned upload URL. Only available in cloud mode; returns 404 in local mode.",
         "operationId": "filesPresign",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/files/{id}/download": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Download file",
+        "description": "Streams file content. Local mode serves from disk; cloud mode redirects to S3.",
+        "operationId": "filesDownload",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/files/cleanup-orphans": {
+      "post": {
+        "tags": [
+          "Files"
+        ],
+        "summary": "Clean up orphaned files",
+        "description": "Deletes file records with zero entity links (DB + disk).",
+        "operationId": "filesCleanupOrphans",
         "parameters": [],
         "responses": {
           "200": {
@@ -4638,7 +4832,7 @@
           "Sync"
         ],
         "summary": "List sync operations",
-        "description": "Returns sync operations.",
+        "description": "Cloud-only. Returns sync operations.",
         "operationId": "syncList",
         "parameters": [],
         "responses": {
@@ -4684,7 +4878,7 @@
           "Sync"
         ],
         "summary": "Create sync op",
-        "description": "Creates a sync operation.",
+        "description": "Cloud-only. Creates a sync operation.",
         "operationId": "syncCreate",
         "parameters": [],
         "responses": {
@@ -4732,7 +4926,7 @@
           "Sync"
         ],
         "summary": "Get sync op",
-        "description": "Retrieves a sync operation.",
+        "description": "Cloud-only. Retrieves a sync operation.",
         "operationId": "syncGet",
         "parameters": [
           {
@@ -4790,7 +4984,7 @@
           "Sync"
         ],
         "summary": "Acknowledge sync",
-        "description": "Marks sync as applied.",
+        "description": "Cloud-only. Marks sync as applied.",
         "operationId": "syncAck",
         "parameters": [
           {
@@ -5336,7 +5530,7 @@
           "Jobs"
         ],
         "summary": "List jobs",
-        "description": "Returns background job records.",
+        "description": "Cloud-only. Returns background job records.",
         "operationId": "jobsList",
         "parameters": [],
         "responses": {
@@ -5382,7 +5576,7 @@
           "Jobs"
         ],
         "summary": "Create job",
-        "description": "Creates a background job.",
+        "description": "Cloud-only. Creates a background job.",
         "operationId": "jobsCreate",
         "parameters": [],
         "responses": {
@@ -5430,7 +5624,7 @@
           "Jobs"
         ],
         "summary": "Mark running",
-        "description": "Marks job as running.",
+        "description": "Cloud-only. Marks job as running.",
         "operationId": "jobsRunning",
         "parameters": [
           {
@@ -5488,7 +5682,7 @@
           "Jobs"
         ],
         "summary": "Mark completed",
-        "description": "Marks job as completed.",
+        "description": "Cloud-only. Marks job as completed.",
         "operationId": "jobsCompleted",
         "parameters": [
           {
@@ -5546,8 +5740,56 @@
           "Backups"
         ],
         "summary": "Export workspace",
-        "description": "Exports all workspace data as JSON.",
+        "description": "Exports workspace data as a portable JSON bundle.",
         "operationId": "backupsExport",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/backups/export-to-disk": {
+      "post": {
+        "tags": [
+          "Backups"
+        ],
+        "summary": "Export workspace to disk",
+        "description": "Writes workspace export JSON to instance/backups/ on the server.",
+        "operationId": "backupsExportToDisk",
         "parameters": [],
         "responses": {
           "200": {
@@ -5594,7 +5836,7 @@
           "Backups"
         ],
         "summary": "Import workspace",
-        "description": "Imports workspace data from JSON.",
+        "description": "Imports workspace data from a JSON bundle. Note: the files field in the import body is informational only and is not imported.",
         "operationId": "backupsImport",
         "parameters": [],
         "responses": {

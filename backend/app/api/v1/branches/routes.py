@@ -2,8 +2,9 @@ from flask import Blueprint, request
 
 from app.api.v1.helpers import item_response, list_response, pagination_args, request_json
 from app.core.validation import load_schema
-from app.repositories.domain import BranchRepository
+from app.repositories import BranchRepository
 from app.schemas.domain import BranchCreateSchema, MergeBranchSchema
+
 from app.services.security import current_user_id, secured
 from app.services.versioning_service import BranchService
 
@@ -32,7 +33,7 @@ def get_branch(branch_id):
 @bp.delete("/<string:branch_id>")
 @secured
 def delete_branch(branch_id):
-    return item_response(BranchService().delete(branch_id))
+    return item_response(BranchService().delete(branch_id, current_user_id()))
 
 
 @bp.post("/<string:branch_id>/merge")

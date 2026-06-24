@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 
 from app.api.v1.helpers import item_response, request_json
-from app.repositories.domain import GraphMaterializationRepository
+from app.repositories import GraphMaterializationRepository
 from app.services.graph_service import GraphService
 from app.services.security import secured
 

@@ -24,6 +24,7 @@ export const governanceEndpoints: Endpoint[] = [
         stale: [{ id: entityId, title: 'Research Notes', updated_at: '2025-06-07T12:00:00Z' }],
         entity_count: 42,
       },
+      created_at: '2025-06-15T08:30:00Z',
     }),
   },
   {

@@ -19,8 +19,14 @@ import Footer from '@/components/Footer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { useTheme } from '@/components/ThemeProvider';
 import Tooltip from '@/components/Tooltip';
-const SchemaTree = dynamic(() => import('@/components/SchemaTree'), { ssr: false });
-const ApiPlayground = dynamic(() => import('@/components/ApiPlayground'), { ssr: false });
+const SchemaTree = dynamic(() => import('@/components/SchemaTree'), {
+  ssr: false,
+  loading: () => <div className="skeleton-block h-48" />,
+});
+const ApiPlayground = dynamic(() => import('@/components/ApiPlayground'), {
+  ssr: false,
+  loading: () => <div className="skeleton-block h-36" />,
+});
 import Image from 'next/image';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { getModuleIcon, getModuleColor } from '@/data/icons';
@@ -40,29 +46,27 @@ interface ApiVersion {
 
 const API_VERSIONS: ApiVersion[] = [
   {
-    label: 'v1.0.0',
-    description: 'Initial release',
-    date: '2026-06',
+    label: 'v1.0.1',
+    description: 'Current — specification & reference release',
+    date: '2026-06-22',
     changes: [
-      '106 endpoints across 24 modules',
-      'Auth, Workspaces, Entities, Blocks, Relations, Tags',
-      'Graph query, traversal, pathfinding',
-      'Versioning, branches, visual diffs',
-      'AI semantic search with Ollama integration',
-      'Governance, audit logs, dashboard analytics',
-      'File upload, sync, notifications, jobs, backups',
+      'OpenAPI 3.0.3 specification: 106 operations, 75 paths, 9 schemas',
+      'Error catalog: 17 standardized error codes across all modules',
+      'Auth guide: OAuth2 PKCE, API keys, PATs, rate limit tiers',
+      'CORS configuration guide and versioning policy documentation',
+      '6 themes, responsive design, neo-brutalist documentation platform',
     ],
   },
   {
-    label: 'v1.1.0',
-    description: 'Beta — current',
-    date: '2026-07',
+    label: 'v1.0.0',
+    description: 'Initial MVP release',
+    date: '2026-06',
     changes: [
-      'All v1.0.0 features',
-      'Cloud mode (NeonDB + S3 + Redis)',
-      'Local mode with SQLite + SimpleCache',
-      'GNOVIUM_MODE env var configuration',
-      'Modular API docs site',
+      '106 endpoints across 24 modules',
+      'Auth, Workspaces, Entities, Blocks, Relations, Tags, Graph',
+      'Versioning, branches, visual diffs, search, AI',
+      'Governance, dashboard, files, sync, notifications, jobs, backups',
+      'JWT authentication with access/refresh token pair',
     ],
   },
 ];
@@ -163,16 +167,21 @@ function CodeBlock({ code, language, maxHeight = '200px', id }: { code: string; 
   const { theme } = useTheme();
   const prismTheme = theme === 'dark' ? themes.oneDark : themes.oneLight;
 
+  const langLabel = language === 'bash' ? 'bash' : language === 'json' ? 'json' : language === 'javascript' ? 'js' : language === 'typescript' ? 'ts' : language;
+
   return (
-    <div className="relative">
-      <button
-        onClick={() => setWrapped(!wrapped)}
-        className="absolute top-2 right-2 p-1 border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] cursor-pointer z-10 bg-[var(--card-bg)]"
-        aria-label={wrapped ? 'Disable word wrap' : 'Enable word wrap'}
-        title={wrapped ? 'Disable word wrap' : 'Enable word wrap'}
-      >
-        <WrapText className={`h-3 w-3 ${wrapped ? 'text-[var(--foreground)]' : ''}`} />
-      </button>
+    <div className="relative code-block-accent">
+      <div className="code-block-header flex items-center justify-between px-3 py-1.5 bg-[var(--card-bg)] border-b-2 border-[var(--border)]">
+        <span className="text-[9px] font-black font-mono uppercase tracking-widest text-[var(--muted)]">{langLabel}</span>
+        <button
+          onClick={() => setWrapped(!wrapped)}
+          className="p-1 border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] cursor-pointer bg-[var(--card-bg)]"
+          aria-label={wrapped ? 'Disable word wrap' : 'Enable word wrap'}
+          title={wrapped ? 'Disable word wrap' : 'Enable word wrap'}
+        >
+          <WrapText className={`h-3 w-3 ${wrapped ? 'text-[var(--foreground)]' : ''}`} />
+        </button>
+      </div>
       <Highlight code={code.trimEnd()} language={language} theme={prismTheme}>
         {({ tokens, getLineProps, getTokenProps }) => (
           <pre
@@ -258,6 +267,36 @@ function RevealSection({ children, className = '', role, 'aria-label': ariaLabel
     >
       {children}
     </motion.div>
+  );
+}
+
+function AnimatedCounter({ value, label }: { value: number; label: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-40px' });
+
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const duration = 1200;
+    const step = Math.ceil(value / (duration / 16));
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= value) {
+        setCount(value);
+        clearInterval(timer);
+      } else {
+        setCount(start);
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [inView, value]);
+
+  return (
+    <div ref={ref} className="flex flex-col items-center">
+      <span className="text-2xl font-black font-mono text-[var(--foreground)] tabular-nums">{count}</span>
+      <span className="text-[9px] font-black font-mono uppercase tracking-widest text-[var(--muted)]">{label}</span>
+    </div>
   );
 }
 
@@ -638,6 +677,18 @@ function DocsContent() {
               Gnovium API is a local-first Knowledge Operating System for building applications where knowledge behaves like a living system rather than a collection of disconnected documents.
             </motion.p>
 
+            {/* Animated stat counter */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, type: 'spring', stiffness: 100, damping: 16 }}
+              className="flex gap-6 pt-1"
+            >
+              <AnimatedCounter value={ENDPOINTS.length} label="Endpoints" />
+              <AnimatedCounter value={ALL_MODULES.length} label="Modules" />
+              <AnimatedCounter value={106} label="Operations" />
+            </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -778,6 +829,11 @@ function DocsContent() {
         </div>
         </RevealSection>
 
+        {/* ── Breadcrumbs ────────────────────────── */}
+        <RevealSection>
+          <Breadcrumbs segments={[{ label: 'API Documentation', current: true }]} />
+        </RevealSection>
+
         {/* ── Founder Profile Hero Card ────────────── */}
         <RevealSection>
         <motion.div
@@ -800,7 +856,7 @@ function DocsContent() {
           {/* Founder Info */}
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2.5 mb-1">
-              <span className="text-[9px] font-black font-mono uppercase tracking-[0.2em] text-[var(--muted)]">Created By</span>
+              <span className="text-[9px] font-black font-mono uppercase tracking-[0.2em] text-[var(--muted)]">Created by</span>
               <span className="text-base font-black font-mono text-[var(--foreground)] tracking-tight">GAURAV KALOLIYA</span>
               <span className="px-2 py-0.5 border border-[var(--border)] text-[9px] font-black font-mono uppercase tracking-wider text-[var(--muted)]">Founder &amp; Creator</span>
             </div>
@@ -905,7 +961,7 @@ function DocsContent() {
             onClick={() => setShowFilters(!showFilters)}
             className="text-step-0 font-black font-mono uppercase tracking-wider neo-depth-btn px-3 py-1.5 border-2 border-[var(--foreground)] text-[var(--foreground)] cursor-pointer flex items-center gap-1.5"
           >
-            <ArrowUpDown className="h-3 w-3" /> {showFilters ? 'Hide Filters' : 'Filters'}
+            <ArrowUpDown className="h-3 w-3" /> {showFilters ? 'Hide filters' : 'Show filters'}
           </button>
         </div>
         </RevealSection>
@@ -950,7 +1006,7 @@ function DocsContent() {
                         : 'border-transparent text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--border)]'
                     }`}
                   >
-                    <span className={`inline-block w-8 text-[9px] ${
+                    <span className={`inline-block w-8 text-[9px] font-black ${
                       ep.method === 'GET' ? 'text-emerald-500' :
                       ep.method === 'POST' ? 'text-sky-500' :
                       ep.method === 'PATCH' ? 'text-amber-500' : 'text-rose-500'
@@ -1106,7 +1162,7 @@ function DocsContent() {
         <RevealSection>
         <div id="quickstart-guide" className="p-6 sm:p-8 rounded-none border-[3px] border-[var(--foreground)] neo-depth mb-6 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-none border-2 border-[var(--foreground)] bg-[var(--card-bg)] text-step-0 font-black tracking-widest uppercase font-mono neo-depth-btn mb-2">
-            QUICKSTART · MVP FLOWS
+            Quickstart · MVP Flows
           </div>
           <h2 className="display-heading text-lg text-[var(--foreground)] mb-1">Core Developer Flows</h2>
           <p className="text-xs text-[var(--muted)] font-mono leading-relaxed mb-4">
@@ -1115,12 +1171,12 @@ function DocsContent() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border-2 border-[var(--border)] bg-[var(--card-bg)] p-6">
-              <div className="text-step-0 font-black uppercase tracking-widest text-emerald-500 font-mono mb-2">LOCAL MODE (Default)</div>
+              <div className="text-step-0 font-black uppercase tracking-widest text-emerald-500 font-mono mb-2">Local Mode (Default)</div>
               <p className="text-sm text-[var(--muted)] leading-relaxed">Your knowledge stays yours. Run Gnovium entirely on your device with zero setup.</p>
               <div className="mt-3"><code className="bg-[var(--code-bg)] px-2 py-1 text-xs font-mono">GNOVIUM_MODE=local</code></div>
             </div>
             <div className="border-2 border-[var(--border)] bg-[var(--card-bg)] p-6">
-              <div className="text-step-0 font-black uppercase tracking-widest text-sky-500 font-mono mb-2">CLOUD MODE</div>
+              <div className="text-step-0 font-black uppercase tracking-widest text-sky-500 font-mono mb-2">Cloud Mode</div>
               <p className="text-sm text-[var(--muted)] leading-relaxed">Transform personal knowledge into shared intelligence.</p>
               <div className="mt-3"><code className="bg-[var(--code-bg)] px-2 py-1 text-xs font-mono">GNOVIUM_MODE=cloud</code></div>
             </div>
@@ -1204,7 +1260,7 @@ function DocsContent() {
         <div id="auth-guide" className="space-y-4 mb-6">
           <div className="p-6 sm:p-8 rounded-none border-[3px] border-[var(--foreground)] neo-depth space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-none border-2 border-[var(--foreground)] bg-[var(--card-bg)] text-step-0 font-black tracking-widest uppercase font-mono neo-depth-btn mb-2">
-              <Shield className="h-3.5 w-3.5" /> AUTHENTICATION
+              <Shield className="h-3.5 w-3.5" /> Authentication
             </div>
             <h2 className="display-heading text-lg text-[var(--foreground)] mb-1">Authentication Guide</h2>
             <p className="text-xs text-[var(--muted)] font-mono leading-relaxed mb-4">
@@ -1305,7 +1361,7 @@ const response = await fetch(
         <div id="rate-limits" className="space-y-4 mb-6">
           <div className="p-6 sm:p-8 rounded-none border-[3px] border-[var(--foreground)] neo-depth space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-none border-2 border-[var(--foreground)] bg-[var(--card-bg)] text-step-0 font-black tracking-widest uppercase font-mono neo-depth-btn mb-2">
-              <Gauge className="h-3.5 w-3.5" /> RATE LIMITS
+              <Gauge className="h-3.5 w-3.5" /> Rate Limits
             </div>
             <h2 className="display-heading text-lg text-[var(--foreground)] mb-1">Rate Limits & Backoff Strategy</h2>
             <p className="text-xs text-[var(--muted)] font-mono leading-relaxed mb-4">
@@ -1462,7 +1518,7 @@ const response = await fetch(
         <div id="api-versioning" className="space-y-4 mb-6">
           <div className="p-6 sm:p-8 rounded-none border-[3px] border-[var(--foreground)] neo-depth space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-none border-2 border-[var(--foreground)] bg-[var(--card-bg)] text-step-0 font-black tracking-widest uppercase font-mono neo-depth-btn mb-2">
-              <GitBranch className="h-3.5 w-3.5" /> VERSIONING
+              <GitBranch className="h-3.5 w-3.5" /> Versioning
             </div>
             <h2 className="display-heading text-lg text-[var(--foreground)] mb-1">API Versioning & Migration</h2>
             <p className="text-xs text-[var(--muted)] font-mono leading-relaxed mb-4">
@@ -1604,11 +1660,7 @@ const response = await fetch(
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2 min-w-0">
                         {getModuleIcon(endpoint.module)}
-                        <span className={`text-[9px] font-black px-1.5 py-0.5 border-2 rounded-none ${
-                          endpoint.method === 'GET' ? 'method-get' :
-                          endpoint.method === 'POST' ? 'method-post' :
-                          endpoint.method === 'PATCH' ? 'method-patch' : 'method-delete'
-                        }`}>{endpoint.method}</span>
+                        {methodBadge(endpoint.method)}
                         <span className="font-mono text-step-0 font-bold text-[var(--foreground)] truncate">{endpoint.path}</span>
                       </div>
                       <button
@@ -1653,7 +1705,7 @@ const response = await fetch(
             <button
               onClick={() => toggleModule(moduleName)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleModule(moduleName); } }}
-              className="w-full flex items-center gap-3 p-4 border-2 border-[var(--border)] bg-[var(--card-bg)] cursor-pointer hover-glow sticky-header"
+              className="w-full flex items-center gap-3 p-4 border-2 border-[var(--border)] cursor-pointer hover-glow module-header"
               style={{
                 borderLeftColor: (() => { const c = getModuleColor(moduleName); return theme === 'dark' ? c.dark : c.light; })(),
                 background: (() => { const c = getModuleColor(moduleName); return `${theme === 'dark' ? c.dark : c.light}08`; })(),
@@ -1766,6 +1818,9 @@ const response = await fetch(
                           </Tooltip>
                         </div>
                         <div className="flex items-center gap-2">
+                          {endpoint.availability === 'cloud-only' && (
+                            <span className="cloud-only-badge">Cloud</span>
+                          )}
                           <span className="text-step-0 text-[var(--muted)] font-black uppercase tracking-widest font-mono">{endpoint.module}</span>
                         </div>
                       </div>
@@ -1994,7 +2049,7 @@ const response = await fetch(
             <h3 className="display-heading text-sm text-[var(--muted)] uppercase tracking-wider">No endpoints match your filters</h3>
             <p className="text-step-0 font-mono text-[var(--muted)] mt-2">Try adjusting your search or filter criteria</p>
             <button onClick={() => { setFilterMethod(null); setFilterModule(null); setSearchQuery(''); }} className="mt-6 text-xs font-mono font-bold neo-depth-btn px-4 py-2 border-2 border-[var(--foreground)] text-[var(--foreground)] cursor-pointer">
-              Clear All Filters
+              Clear all filters
             </button>
           </div>
         )}
@@ -2056,7 +2111,7 @@ const response = await fetch(
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="lg:hidden fixed bottom-24 right-6 z-30 flex h-10 w-10 items-center justify-center rounded-none border-2 border-[var(--foreground)] bg-[var(--card-bg)] shadow-[3px_3px_0px_0px_var(--shadow-color)] text-[var(--foreground)] cursor-pointer"
+            className="lg:hidden fixed bottom-32 right-6 z-30 flex h-10 w-10 items-center justify-center rounded-none border-2 border-[var(--foreground)] bg-[var(--card-bg)] shadow-[3px_3px_0px_0px_var(--shadow-color)] text-[var(--foreground)] cursor-pointer"
           >
             <ArrowDown className="h-4 w-4 rotate-180" />
           </motion.button>
@@ -2064,7 +2119,7 @@ const response = await fetch(
       </AnimatePresence>
 
       {/* Mobile hamburger */}
-      <div className="lg:hidden fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-6 z-30">
+      <div className="lg:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] right-6 z-30">
         <button
           onClick={() => setMobileMenuOpen(true)}
           className="flex h-12 w-12 items-center justify-center rounded-none border-3 border-[var(--foreground)] bg-[var(--card-bg)] shadow-[6px_6px_0px_0px_var(--shadow-color)] text-[var(--foreground)] cursor-pointer"
@@ -2107,18 +2162,18 @@ const response = await fetch(
               />
 
               <div className="mt-auto pt-8 border-t border-[var(--border)]">
-                <div className="font-mono text-step-0 font-black uppercase tracking-[0.2em] text-[var(--foreground)] flex flex-col gap-2">
+                <div className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-[var(--foreground)] flex flex-col gap-1.5">
                   <span className="opacity-60">CREATED &amp; BUILT BY</span>
-                  <a href="https://www.linkedin.com/in/gaurav-kaloliya-b44569417" target="_blank" rel="noopener noreferrer" className="font-bold border-b-2 border-[var(--foreground)] pb-px inline-block hover:opacity-80 transition-opacity">
+                  <a href="https://www.linkedin.com/in/gaurav-kaloliya-b44569417" target="_blank" rel="noopener noreferrer" className="font-bold border-b border-[var(--foreground)] pb-px inline-block hover:opacity-80 transition-opacity text-[11px]">
                     GAURAV KALOLIYA
                   </a>
-                  <div className="flex items-center gap-3 text-[9px] tracking-[0.15em] pt-1">
+                  <div className="flex items-center gap-2 text-[8px] tracking-[0.12em] pt-1">
                     <a href="https://github.com/GauravKaloliya/gnovium" target="_blank" rel="noopener noreferrer" className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors flex items-center gap-1">
-                      GITHUB <ExternalLink className="h-2.5 w-2.5" />
+                      GITHUB <ExternalLink className="h-2 w-2" />
                     </a>
                     <span className="opacity-30">•</span>
                     <a href="https://www.linkedin.com/in/gaurav-kaloliya-b44569417" target="_blank" rel="noopener noreferrer" className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors flex items-center gap-1">
-                      LINKEDIN <ExternalLink className="h-2.5 w-2.5" />
+                      LINKEDIN <ExternalLink className="h-2 w-2" />
                     </a>
                   </div>
                 </div>
@@ -2135,7 +2190,7 @@ const response = await fetch(
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 border-2 border-[var(--foreground)] bg-[var(--card-bg)] shadow-[4px_4px_0px_var(--shadow-color)] text-xs font-mono font-bold"
+            className="fixed bottom-32 lg:bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 border-2 border-[var(--foreground)] bg-[var(--card-bg)] shadow-[4px_4px_0px_var(--shadow-color)] text-xs font-mono font-bold"
           >
             <div className="flex items-center gap-2">
               <Check className="h-3.5 w-3.5 text-emerald-500" />
@@ -2145,45 +2200,7 @@ const response = await fetch(
         )}
       </AnimatePresence>
 
-      {/* Mobile bottom nav */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 border-t-2 border-[var(--foreground)] bg-[var(--card-bg)] pb-[env(safe-area-inset-bottom)] flex">
-        {[
-          { id: 'docs', label: 'Docs', icon: BookOpen },
-          { id: 'recent', label: 'Recent', icon: Clock },
-          { id: 'pinned', label: 'Pinned', icon: Star },
-          { id: 'filters', label: 'Filters', icon: ArrowUpDown },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = tab.id === 'docs' ? !showFilters : tab.id === 'filters' ? showFilters : false;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => {
-                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(8);
-                if (tab.id === 'filters') { setShowFilters(true); return; }
-                if (tab.id === 'docs') { setShowFilters(false); return; }
-                if (tab.id === 'recent') {
-                  document.getElementById('recently-viewed-section')?.scrollIntoView({ behavior: 'smooth' });
-                  return;
-                }
-                if (tab.id === 'pinned') {
-                  document.querySelector('#pinned-section')?.scrollIntoView({ behavior: 'smooth' });
-                  return;
-                }
-                setShowFilters(false);
-              }}
-              className={`flex-1 flex flex-col items-center justify-center py-2.5 gap-0.5 text-[9px] font-mono font-black uppercase tracking-wider transition-colors cursor-pointer border-r-2 border-[var(--border)] last:border-r-0 ${
-                isActive
-                  ? 'text-[var(--foreground)] bg-[var(--foreground)]/5'
-                  : 'text-[var(--muted)] hover:text-[var(--foreground)]'
-              }`}
-            >
-              <Icon className="h-4 w-4 stroke-[2.5]" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+
     </div>
   );
 }
@@ -2199,12 +2216,12 @@ export default function DocsPage() {
           Skip to main content
         </a>
         <Suspense fallback={
-          <div className="space-y-4">
-            <div className="h-12 shimmer" />
-            <div className="h-8 shimmer w-1/2" />
-            <div className="h-64 shimmer" />
-            <div className="h-48 shimmer" />
-            <div className="h-48 shimmer" />
+          <div className="space-y-4 p-8">
+            <div className="skeleton h-12" />
+            <div className="skeleton h-8 w-1/2" />
+            <div className="skeleton h-64" />
+            <div className="skeleton h-48" />
+            <div className="skeleton h-48" />
           </div>
         }>
           <DocsContent />

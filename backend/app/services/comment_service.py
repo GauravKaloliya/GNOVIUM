@@ -1,5 +1,5 @@
 from app.extensions import db
-from app.repositories.domain import CommentRepository
+from app.repositories import CommentRepository
 
 
 class CommentService:
@@ -18,6 +18,15 @@ class CommentService:
     def delete(self, comment_id, user_id):
         repo = CommentRepository()
         comment = repo.get(comment_id)
-        repo.soft_delete(comment)
+        repo.soft_delete(comment, deleted_by=user_id)
+        db.session.commit()
+        return comment
+
+    def restore(self, comment_id):
+        repo = CommentRepository()
+        comment = repo.get(comment_id, include_deleted=True)
+        comment.is_deleted = False
+        comment.deleted_at = None
+        comment.deleted_by = None
         db.session.commit()
         return comment

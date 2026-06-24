@@ -1,10 +1,10 @@
 from flask import Blueprint, request
 
 from app.api.v1.helpers import item_response, list_response, pagination_args, raw_response, request_json
-from app.repositories.domain import ActivityLogRepository
+from app.repositories import ActivityLogRepository
 from app.services.security import secured
 from app.services.graph_service import GraphService
-from app.repositories.domain import GraphMaterializationRepository
+from app.repositories import GraphMaterializationRepository
 
 bp = Blueprint("activity", __name__)
 
