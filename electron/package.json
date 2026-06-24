@@ -8,7 +8,7 @@
     "dev": "npm run build && tsc --watch & chokidar 'renderer/**' --no-initial -c 'cp -r renderer dist/renderer' & sleep 1 && electron .",
     "start": "electron .",
     "build": "tsc -p tsconfig.json && npm run copy-assets",
-    "copy-assets": "rm -rf dist/renderer && mkdir -p dist && cp -r renderer dist/renderer && cp -r src/logo dist/renderer/logo",
+    "copy-assets": "rm -rf dist/renderer && mkdir -p dist && cp -r renderer dist/renderer",
     "build:main": "tsc -p tsconfig.main.json",
     "build:preload": "tsc -p tsconfig.preload.json",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
